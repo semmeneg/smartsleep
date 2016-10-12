@@ -1,1 +1,3 @@
-"# smartsleep" 
+SmartSleep is a research project of the Institute for Information and Process Management IPM at FHS St.Gallen.
+
+For further information see: [https://www.fhsg.ch/fhs.nsf/de/ipm-fhs-themenkompetenzen-ehealth-forschungsprojekte-ehealth-und-gesundheitswesen-projekt-smartsleep](https://www.fhsg.ch/fhs.nsf/de/ipm-fhs-themenkompetenzen-ehealth-forschungsprojekte-ehealth-und-gesundheitswesen-projekt-smartsleep](https://www.fhsg.ch/fhs.nsf/de/ipm-fhs-themenkompetenzen-ehealth-forschungsprojekte-ehealth-und-gesundheitswesen-projekt-smartsleep](https://www.fhsg.ch/fhs.nsf/de/ipm-fhs-themenkompetenzen-ehealth-forschungsprojekte-ehealth-und-gesundheitswesen-projekt-smartsleep "SmartSleep at FHSG")

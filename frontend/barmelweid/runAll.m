@@ -1,0 +1,5 @@
+%trainFeatureEventsWEKA
+%trainXValFeatureEvents
+
+trainFeatureEventsDBNs
+trainFeatureEventsDBNCrossVal
