@@ -1,21 +1,14 @@
-function [ dbn ] = genericDBNTrain( windowData, windowLabels, params )
+function [ dbn ] = genericDBNTrain( dataSet, params )
 %GENERICDBNTRAIN Trains DBN with Random Bolzman Machine
 % Uses DBN class from DeeBNet toolbox. 
 
     dbn = [];
     dbn.params = params;
     
-    dbnData = setupDBNData( windowLabels, windowData, params.dataStratification, ...
-        false, params.uniformClassDistribution );
+%     dbnData = setupDBNData( windowLabels, windowData, params.dataStratification, ...
+%         false, params.uniformClassDistribution );
     
-    dbn.dataSet = DataClasses.DataStore();
-    dbn.dataSet.valueType = ValueType.probability;
-    dbn.dataSet.trainData = dbnData.trainData;
-    dbn.dataSet.trainLabels = dbnData.trainLabels;
-    dbn.dataSet.validationData = dbnData.validationData;
-    dbn.dataSet.validationLabels = dbnData.validationLabels;
-    dbn.dataSet.testData = dbnData.testData;
-    dbn.dataSet.testLabels = dbnData.testLabels;
+    dbn.dataSet = dataSet;
     
     if ( params.normalize )
         dbn.dataSet.normalize( 'minmax' );
@@ -46,18 +39,25 @@ function [ dbn ] = genericDBNTrain( windowData, windowLabels, params )
         dbn.net.addRBM( rbmParams );
     end
 
-    rbmParams = RbmParameters( params.lastLayerHiddenUnits, ValueType.binary );
-    rbmParams.samplingMethodType = SamplingClasses.SamplingMethodType.CD;
-    rbmParams.performanceMethod = 'classification';
-    rbmParams.rbmType = RbmType.discriminative;
-    rbmParams.maxEpoch = maxEpochs;  
-    rbmParams.sparsity = sparsity;
-    dbn.net.addRBM( rbmParams );
+%     rbmParams = RbmParameters( params.lastLayerHiddenUnits, ValueType.binary );
+%     rbmParams.samplingMethodType = SamplingClasses.SamplingMethodType.CD;
+%     rbmParams.performanceMethod = 'classification';
+%     rbmParams.rbmType = RbmType.discriminative;
+%     rbmParams.maxEpoch = maxEpochs;  
+%     rbmParams.sparsity = sparsity;
+%     dbn.net.addRBM( rbmParams );
 
+    %train
+    tStart = tic;
     dbn.net.train( dbn.dataSet );
+    fprintf('DBN train time used: %f seconds.\n', toc(tStart));
+    
+    %backpropagation
+    tStart = tic;
     dbn.net.backpropagation( dbn.dataSet );
+    fprintf('DBN backpropagation time used: %f seconds.\n', toc(tStart));
     
     if ( params.extractFeatures )
-        dbn.features = dbn.net.getFeature( windowData );
+        dbn.features = dbn.net.getFeature( [dataSet.trainData; dataSet.validationData; dataSet.testData ] );
     end
 end

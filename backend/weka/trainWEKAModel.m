@@ -3,8 +3,8 @@ function [ ] = trainWEKAModel( wekaPath, trainingFile, modelFile, resultsFile )
 %   Detailed explanation goes here
 
     oldFolder = cd( wekaPath );
-
-    cmd = [ 'java -Xmx1024m -cp weka.jar weka.classifiers.trees.RandomForest' ...
+    disp('Start training Weka classifier ...');
+    cmd = [ 'java -Xmx6144m -cp weka.jar weka.classifiers.trees.RandomForest' ...
         ' -t "' trainingFile '"'...
         ' -d "' modelFile  '"' ];
 
@@ -15,4 +15,5 @@ function [ ] = trainWEKAModel( wekaPath, trainingFile, modelFile, resultsFile )
     fclose( fid );
     
     cd( oldFolder );
+    disp('... finished training Weka classifier.');
 end

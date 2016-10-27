@@ -67,5 +67,8 @@ function [ allPatients ] = extractRawEventsPatientFolder( allPatientsPath, ...
     end
 
     matFileName = [ matFileName '.mat' ];
-    save( matFileName, 'allPatients' );
+    % switched to a matfile handle which overcomes the filesize limitation of the save function (2GB)
+    matFileHandle = matfile(matFileName, 'Writable',true);
+    matFileHandle.allPatients = allPatients;
+%     save( matFileName, 'allPatients' );
 end
