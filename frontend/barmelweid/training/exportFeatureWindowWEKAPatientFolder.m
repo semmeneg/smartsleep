@@ -1,4 +1,4 @@
-function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath, ...
+function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath, outputFolder, ...
     requiredEdfSignals, eventClasses, windowLength, combineAll, ...
     processEdf, processMsr, processZephyr )
 %PROCESSPATIENTS Summary of this function goes here
@@ -16,7 +16,7 @@ function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath
     
     for i = 1 : patientCount
         patient = exportFeatureWindowWEKAPatient( allPatientsPath, ...
-            allPatientFolders( i ).name, ...
+            allPatientFolders( i ).name, outputFolder, ...
             requiredEdfSignals, eventClasses, windowLength, ...
             processEdf, processMsr, processZephyr );
 
@@ -61,14 +61,15 @@ function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath
     end
 
     if ( combineAll )
-        smartSleepPath = [ allPatientsPath 'SmartSleep\Windows\' ];
+        
+        allCombinedOutputFolder = [ allPatientsPath 'all\2_preprocessed\' outputFolder '\' ];
 
-        mkdir( smartSleepPath );
+        mkdir( allCombinedOutputFolder );
 
         relationName = 'All Patients SmartSleep Barmelweid (Windows';
         relationName = sprintf( '%s %d) (', relationName, windowLength );
-        combinedFileNamePrefix = [ smartSleepPath 'allpatients_WINDOWS' ];
-        combinedFileNamePrefix = sprintf( '%s_%d', combinedFileNamePrefix, windowLength );
+        combinedFileNamePrefix = [ allCombinedOutputFolder 'allpatients_WINDOWS' ];
+%         combinedFileNamePrefix = sprintf( '%s_%d', combinedFileNamePrefix, windowLength );
 
         if ( processEdf )
             relationName = [ relationName ' EEG ' ];

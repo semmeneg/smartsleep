@@ -1,48 +1,17 @@
-function [ dbn ] = trainPatientsRawEventsDBN( testDescription, resultPath, splitByPatients, dataStratificationRatios, applyWekaClassifier, varargin )
+function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, varargin )
 %trainPatientsRawEventsDBN load raw data mat file with data, features and labels of each patient
 %   Set parameters like stratisfaction (training, validation and test
 %   data), DBN layer count and units, 
 
-    disp( ['DBN-Training on events of ' strjoin(varargin, ' & ') ' ...'] );
+    disp( [' Raw data DBN-Training on events of ' strjoin(varargin, ' & ') ' ...'] );
+
+    trainedDataResultPath = [CONF.ALL_PATIENTS_TRAINED_DNB_DATA_PATH dataResultSubFolder '\'];
+    classifiedDataResultPath = [CONF.ALL_PATIENTS_CLASSIFIED_WEKA_DATA_PATH dataResultSubFolder '\'];
 
     allPatientsDataFilePrefix = ['allpatients_RAWEVENTS_' strjoin(varargin, '_') ];
-    load( [ CONF.ALL_PATIENTS_DATA_PATH allPatientsDataFilePrefix '.mat' ] );
-
-    mkdir( resultPath );
-    resultPathAndFilenamePrefix = [ resultPath allPatientsDataFilePrefix ];
-    
-    if(splitByPatients)
-        dataStratificator = PatientDataStratificator(allPatients, dataStratificationRatios);
-    else %split over all events
-        allData = [];
-        allLabels = [];
-        for i = 1 : length( allPatients )
-            p = allPatients{ i };
-
-            allData = [ allData; p.combinedData ];
-            allLabels = [ allLabels; p.combinedLabels ];
-        end    
-        eventClasses = allPatients{ 1 }.filteredEvents.classes;
-        dataStratificator = AllDataStratificator(eventClasses, allLabels, allData, dataStratificationRatios, false, false);       
-    end
-       
-    dataSet = DataClasses.DataStore();
-    dataSet.valueType = ValueType.probability;
-    dataSet.trainData = dataStratificator.trainData;
-    dataSet.trainLabels = dataStratificator.trainLabels;
-    dataSet.validationData = dataStratificator.validationData;
-    dataSet.validationLabels = dataStratificator.validationLabels;
-    dataSet.testData = dataStratificator.testData;
-    dataSet.testLabels = dataStratificator.testLabels;    
-
-    % forgot to remove nans in MSR, need to do it here for safety, because
-    % a nan would lead to NaN in all results => no use at all
-    dataSet.trainData( isnan( dataSet.trainData ) ) = 0;
-    dataSet.validationData( isnan( dataSet.validationData ) ) = 0;
-    dataSet.testData( isnan( dataSet.testData ) ) = 0;
     
     allData = [dataSet.trainData; dataSet.validationData; dataSet.testData ];
-
+    
     params.extractFeatures = true;
     params.hiddenUnitsCount = 4 * size(allData, 2);   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
     params.hiddenLayers = 2;    % NOTE: 2 is optimum, more hidden layers decrease classification 
@@ -56,12 +25,39 @@ function [ dbn ] = trainPatientsRawEventsDBN( testDescription, resultPath, split
     classifiedLabels = dbn.net.getOutput( allData );
     allLabels = [dataSet.trainLabels; dataSet.validationLabels; dataSet.testLabels ];
     
-    [ cm ] = calcCM( dataStratificator.classes, classifiedLabels, allLabels);
+    [ cm ] = calcCM( eventClasses, classifiedLabels, allLabels);
     
+    mkdir( trainedDataResultPath );
+    trainedDataResultPathAndFilenamePrefix = [ trainedDataResultPath allPatientsDataFilePrefix ];    
     
-    fid = fopen( [ resultPathAndFilenamePrefix '_DBN.txt' ], 'w' );
-    printCM( fid, dataStratificator.classes, cm );
+    fid = fopen( [ trainedDataResultPathAndFilenamePrefix '_DBN.txt' ], 'w' );
+    printCM( fid, eventClasses, cm );
     fclose( fid );
     
-    save( [ resultPathAndFilenamePrefix '_DBN.mat' ], 'dbn' );
+    save( [ trainedDataResultPathAndFilenamePrefix '_DBN.mat' ], 'dbn' );
+    
+    channelNames = cell( params.lastLayerHiddenUnits, 1 );
+    
+    for i = 1 : params.lastLayerHiddenUnits
+        channelNames{ i } = sprintf( 'FEATURE_%d', i );
+    end
+    
+    if(applyWekaClassifier)
+        
+        arffFileName = [ trainedDataResultPathAndFilenamePrefix '_DBN.arff' ];
+    
+        exportGenericToWeka( dbn.features, allLabels, eventClasses, ...
+            'Barmelweid DBN on raw data', arffFileName, channelNames );
+        
+        mkdir(classifiedDataResultPath);
+
+        classifiedDataResultPathAndFilenamePrefix = [ classifiedDataResultPath allPatientsDataFilePrefix ];    
+        trainWEKAModel( CONF.WEKA_PATH, arffFileName, ...
+            [ trainedDataResultPathAndFilenamePrefix '_DBN.model' ], ...
+            [ classifiedDataResultPathAndFilenamePrefix '_DBN_WEKARESULT.txt' ] );
+        
+        %appent Weka results to csv file
+        wekaResultFileName = [allPatientsDataFilePrefix '_DBN_WEKARESULT.txt' ];
+        appendWekaResult2Csv(classifiedDataResultPath, wekaResultFileName, 'cm_raw.csv', varargin{:}); 
+    end
 end

@@ -3,7 +3,6 @@ classdef AllDataStratificator
     % training, validation and testing according the defined stratification ratios.
     
     properties
-        classes = [];
         trainData = [];
         trainLabels = [];
         validationData = [];
@@ -13,16 +12,18 @@ classdef AllDataStratificator
     end
     
     methods
-        function obj = AllDataStratificator(classes, labels, rawData, dataStratificationRatios, filterHoles, uniformClassDistribution )
+        function obj = AllDataStratificator(labels, rawData, dataStratificationRatios, filterHoles, uniformClassDistribution )
             
-            obj.classes = classes;
+            train = dataStratificationRatios( 1 );
+            validate = dataStratificationRatios( 2 );
+            test = dataStratificationRatios( 3 );
             
-            trainingDataRatio = dataStratificationRatios( 1 );
-            validationDataRatio = dataStratificationRatios( 2 );
-            testDataRatio = dataStratificationRatios( 3 );
+            if ( (train > 1.0) || (validate > 1.0) || (test > 1.0) )
+                error( 'Stratification ratios for training, validation or test cannot not be > 1.0 (100%)' );
+            end
             
-            if ( sum( [ trainingDataRatio validationDataRatio testDataRatio] ) ~= 1.0 )
-                error( 'Stratification ratios for training, validation and test must sum up to 1.0' );
+            if ( sum( [ train validate test] ) ~= 1.0 )
+                disp( fprintf('Attention! Data split will overlab (sum > 100%): Training = %.0f%% Validation = %.0f%% Testing = %.0f%%', train*100, validate*100, test*100) );
             end
             
             % NOTE: split the data-set into two parts: training- and
@@ -73,9 +74,9 @@ classdef AllDataStratificator
                 
                 labelIdxCount = length( labelIdx );
                 
-                trainSamplesCount = floor( labelIdxCount * trainingDataRatio );
-                validationSamplesCount = floor( labelIdxCount * validationDataRatio );
-                testSamplesCount = floor( labelIdxCount * testDataRatio );
+                trainSamplesCount = floor( labelIdxCount * train );
+                validationSamplesCount = floor( labelIdxCount * validate );
+                testSamplesCount = floor( labelIdxCount * test );
                 
                 delta = labelIdxCount - ( trainSamplesCount + validationSamplesCount + testSamplesCount );
                 trainSamplesCount = trainSamplesCount + delta;

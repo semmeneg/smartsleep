@@ -1,4 +1,4 @@
-function [ dbn ] = genericDBNTrain( dataSet, params )
+function [ dbn ] = genericDBNTrain( dataSet, hiddenLayerDefs )
 %GENERICDBNTRAIN Trains DBN with Random Bolzman Machine
 % Uses DBN class from DeeBNet toolbox. 
 

@@ -4,7 +4,6 @@ classdef PatientDataStratificator
     % sets.
     
     properties
-        classes = [];
         trainData = [];
         trainLabels = [];
         validationData = [];
@@ -28,8 +27,6 @@ classdef PatientDataStratificator
                 disp( fprintf('Attention! Data split will overlab (sum > 100%): Training = %.0f%% Validation = %.0f%% Testing = %.0f%%', train*100, validate*100, test*100) );
             end
             
-            obj.classes = allPatientData{ 1 }.filteredEvents.classes;
-                
             patientsCount = length( allPatientData );
             
             trainSamplesCount = floor( patientsCount * train );

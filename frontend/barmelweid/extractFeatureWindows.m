@@ -8,10 +8,10 @@ warning ( 'on', 'PATIENT:channelsMissmatch' );
 COMBINE_ALL = true;
 WINDOW_LENGTH = 30;
 
-% TODO: specify starting-times for all patients: starting classification when light-off
+OTUPUT_FOLDER = '2016-11-08_Zephyr_Features';
 
-%ALL_PATIENTS_PATH = 'E:\FH\Job\SmartSleep Data\Barmelweid\SmartSleepPatienten\';
-ALL_PATIENTS_PATH = 'D:\SmartSleepData\Barmelweid\SmartSleep\Events\';
+
+% TODO: specify starting-times for all patients: starting classification when light-off
 
 EVENT_CLASSES = { 'Arousal', 'Artefakt', 'R', 'W', 'N1', 'N2', 'N3' };
 
@@ -33,47 +33,47 @@ for WINDOW_LENGTH = ALL_WINDOW_LENGTHS
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );
     fprintf( 'Extracting %d-sec windows ...\n', WINDOW_LENGTH );
     
-    % EEG only
-    disp( 'Extracting feature-windows of EEG ONLY ...' );
-    exportFeatureWindowWEKAPatientFolder( ALL_PATIENTS_PATH, REQUIRED_EDF_SIGNALS, ...
-        EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, false, false );
-    disp( 'Finished extracting feature-windows of EEG ONLY.' );
-
-    % MSR only
-    disp( 'Extracting feature-windows of MSR ONLY ...' );
-    exportFeatureWindowWEKAPatientFolder( ALL_PATIENTS_PATH, REQUIRED_EDF_SIGNALS, ...
-        EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, false, true, false );
-    disp( 'Finished extracting feature-windows of MSR ONLY ...' );
+%     % EEG only
+%     disp( 'Extracting feature-windows of EEG ONLY ...' );
+%     exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+%         EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, false, false );
+%     disp( 'Finished extracting feature-windows of EEG ONLY.' );
+% 
+%     % MSR only
+%     disp( 'Extracting feature-windows of MSR ONLY ...' );
+%     exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+%         EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, false, true, false );
+%     disp( 'Finished extracting feature-windows of MSR ONLY ...' );
 
     % ZEPHYR only
     disp( 'Extracting feature-windows of ZEPHYR ONLY ...' );
-    exportFeatureWindowWEKAPatientFolder( ALL_PATIENTS_PATH, REQUIRED_EDF_SIGNALS, ...
+    exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
         EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, false, false, true );
     disp( 'Finished extracting feature-windows of ZEPHYR ONLY.' );
 
-    % MSR & ZEPHYR
-    disp( 'Extracting feature-windows of MSR & ZEPHYR ...' );
-    exportFeatureWindowWEKAPatientFolder( ALL_PATIENTS_PATH, REQUIRED_EDF_SIGNALS, ...
-        EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, false, true, true );
-    disp( 'Finished extracting feature-windows of MSR & ZEPHYR.' );
-
-    % EEG & MSR 
-    disp( 'Extracting feature-windows of EEG & MSR  ...' );
-    exportFeatureWindowWEKAPatientFolder( ALL_PATIENTS_PATH, REQUIRED_EDF_SIGNALS, ...
-        EXPECTED_EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, true, false );
-    disp( 'Finished extracting feature-windows of EEG & MSR.' );
-
-    % EEG & ZEPHYR 
-    disp( 'Extracting feature-windows of EEG & ZEPHYR  ...' );
-    exportFeatureWindowWEKAPatientFolder( ALL_PATIENTS_PATH, REQUIRED_EDF_SIGNALS, ...
-        EXPECTED_EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, false, true );
-    disp( 'Finished extracting feature-windows of EEG & ZEPHYR.' );
-    
-    % EEG & MSR & ZEPHYR
-    disp( 'Extracting feature-windows of EEG & MSR & ZEPHYR ...' );
-    exportFeatureWindowWEKAPatientFolder( ALL_PATIENTS_PATH, REQUIRED_EDF_SIGNALS, ...
-        EXPECTED_EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, true, true );
-    disp( 'Finished extracting feature-windows of EEG & MSR & ZEPHYR.' );
+%     % MSR & ZEPHYR
+%     disp( 'Extracting feature-windows of MSR & ZEPHYR ...' );
+%     exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+%         EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, false, true, true );
+%     disp( 'Finished extracting feature-windows of MSR & ZEPHYR.' );
+% 
+%     % EEG & MSR 
+%     disp( 'Extracting feature-windows of EEG & MSR  ...' );
+%     exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+%         EXPECTED_EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, true, false );
+%     disp( 'Finished extracting feature-windows of EEG & MSR.' );
+% 
+%     % EEG & ZEPHYR 
+%     disp( 'Extracting feature-windows of EEG & ZEPHYR  ...' );
+%     exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+%         EXPECTED_EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, false, true );
+%     disp( 'Finished extracting feature-windows of EEG & ZEPHYR.' );
+%     
+%     % EEG & MSR & ZEPHYR
+%     disp( 'Extracting feature-windows of EEG & MSR & ZEPHYR ...' );
+%     exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+%         EXPECTED_EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, true, true );
+%     disp( 'Finished extracting feature-windows of EEG & MSR & ZEPHYR.' );
     
     fprintf( 'Finished extracting %d-sec windows ...\n', WINDOW_LENGTH );
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );

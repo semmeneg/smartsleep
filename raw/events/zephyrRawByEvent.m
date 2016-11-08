@@ -8,10 +8,18 @@ function [ raw ] = zephyrRawByEvent( zephyrSummaryFile, events )
     ASSUMED_EVENT_DURATION = 30;
     SAMPLES_PER_CHANNEL = OVERSAMPLING_HZ * ASSUMED_EVENT_DURATION;
     
-    selectedChannels = { 'HR', 'BR', 'SkinTemp', 'PeakAccel', ...
-        'BRAmplitude', 'BRNoise', 'BRConfidence', 'ECGAmplitude', ...
-        'ECGNoise', 'HRConfidence', 'HRV', 'VerticalMin', 'VerticalPeak', ...
+%     selectedChannels = { 'HR', 'BR', 'SkinTemp', 'PeakAccel', ...
+%         'BRAmplitude', 'BRNoise', 'BRConfidence', 'ECGAmplitude', ...
+%         'ECGNoise', 'HRConfidence', 'HRV', 'VerticalMin', 'VerticalPeak', ...
+%         'LateralMin', 'LateralPeak', 'SagittalMin', 'SagittalPeak' };
+    
+    selectedChannels = { 'HR', 'BR', 'PeakAccel', ...
+        'BRAmplitude', 'ECGAmplitude', 'VerticalMin', 'VerticalPeak', ...
         'LateralMin', 'LateralPeak', 'SagittalMin', 'SagittalPeak' };
+    
+    % if this channels have 0 values, then the event(row) shall be skiped 
+    zeroValueFilterChannels = { 'HR' 'BR'};
+    features.skippedEvents = 0;    
     
     channelsCount = length( selectedChannels );
     eventCount = length( events.time );
@@ -78,8 +86,14 @@ function [ raw ] = zephyrRawByEvent( zephyrSummaryFile, events )
         end
     end
     
-    invalidLabelsIdx = find( raw.labels == 0 );
-    raw.labels( invalidLabelsIdx ) = [];
-    raw.data( invalidLabelsIdx, : ) = [];
+    % Remove zeros
+    for channel = zeroValueFilterChannels
+        channelId = strmatch(channel, selectedChannels, 'exact');
+        zerosIdx = ~any(raw.data(:,channelId),2);
+        features.skippedEvents = features.skippedEvents + zerosIdx;
+        raw.data( zerosIdx, : ) = [];
+        raw.labels( zerosIdx, : ) = [];
+    end
+
 end
 

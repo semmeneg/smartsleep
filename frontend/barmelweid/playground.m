@@ -1,34 +1,27 @@
-m = floor(rand(2,3)*10);
-disp(m);
-disp(sum(m,4));
 
-    
-% tic
-% file = [ CONF.ALL_PATIENTS_DATA_PATH 'allpatients_RAWEVENTS_EEG.mat'];
-% % cp = load(file, 'allPatients{1}.combinedData');
-% dataFileHandle = matfile(file);
-% % varlist = who(dataFileHandle);
-% patient = dataFileHandle.allPatients(1,:);
-% 
-% % data = cp{1}.combinedData;
-% % disp(cp.Properties);
-% 
-% 
-% % A = [1 2; 3 4];
-% % B = repmat(A, 2, 1);
-% % disp(B);
-% % 
-% isWritable = true;
-% increasingMat = patient;
-% for i=1:10
-% %     increasingMat = repmat(allPatients{1}.combinedData,i+1,1);
-%     increasingMat = [increasingMat;patient];
-%     disp(['Run: ' num2str(i)]);
-%     disp(size(increasingMat));
-%     filenameOut = [file,'__',num2str(i),'.mat'];
-%     m = matfile(filenameOut,'Writable',isWritable);
-%     m.allPatients = increasingMat;
-% %     save(filenameOut, 'increasingMat', '-append');
-% end
-% 
-% toc
+% appendWekaResult2Csv('\\VBOXSVR\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\all\4_classified\Weka\2016-11-03_zephyrOnly_ohne_entropy_und_maxFreq\', 'cm.csv', DATA_SOURCE.ZEPHYR);
+
+a = 1:2:20;
+disp(a);
+
+% a = [1.2,2.2,3.2,4.2,5.2,6.2];
+% b = [2.2,4.2,5.2];
+% disp(a);
+% disp(find(ismember(a,b)));
+
+
+
+
+%  startSecond = 57;
+%  time = 1455143816.00000;  %'... 36:56'
+ % time = (time - mod(time,60)) + 60 + startSecond;
+ % time = TimeUtils.getPreviousTimeWithSameSeconds(time, startSecond);
+%  unix_epoch = datenum(1970,1,1,0,0,0);
+%  time = (time + unix_epoch * 86400)/86400;
+%  disp(datestr(time));
+
+% time = 1455143816.00000;
+% time = (time - mod(time,60)) - 60 + startSecond;
+% unix_epoch = datenum(1970,1,1,0,0,0);
+% time = (time + unix_epoch * 86400)/86400;
+% disp(datestr(time));

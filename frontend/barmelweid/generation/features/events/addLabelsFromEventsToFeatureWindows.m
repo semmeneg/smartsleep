@@ -1,4 +1,4 @@
-function [ featureWindows ] = addLabelsToFeatureWindowsByEvents( featureWindows, events, wantedEventClasses )
+function [ featureWindows ] = addLabelsFromEventsToFeatureWindows( featureWindows, events, wantedEventClasses )
 %LABELSTOWINDOWSBYEVENTS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -34,7 +34,11 @@ function [ featureWindows ] = addLabelsToFeatureWindowsByEvents( featureWindows,
     featureWindows.labels( outOfEventIndices ) = [];
     featureWindows.data( outOfEventIndices, : ) = [];
     featureWindows.time( outOfEventIndices ) = [];
-
-    featureWindows.startTime = featureWindows.time( 1 );
-    featureWindows.endTime = featureWindows.time( end );
+    
+    if(~isempty(featureWindows.time))
+        featureWindows.startTime = featureWindows.time( 1 );
+        featureWindows.endTime = featureWindows.time( end );
+    else 
+        featureWindows = []; % empty, now labeled windows left after timed merge
+    end
 end

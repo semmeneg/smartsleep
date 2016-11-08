@@ -1,10 +1,10 @@
-function appendWekaResult2Csv(resultsFolder, csvFileName, varargin)
+function appendWekaResult2Csv(resultsFolder, wekaResultFileName, csvFileName, varargin)
 %appendWekaResult2Csv Parses Weka result files in given folder and appends
 %   results in given csv file. 
 
     csvFile = [resultsFolder csvFileName];
     csvFileId = fopen(csvFile, 'a');
-    fileName = [resultsFolder 'allpatients_EVENTS_' strjoin(varargin, '_') '_DBNFEATURES_WEKARESULT.txt'];
+    fileName = [resultsFolder wekaResultFileName];
     result = parseWEKAResult(fileName);
     fprintf(csvFileId, strjoin(varargin, ' & '));
     fprintf(csvFileId, '\n');

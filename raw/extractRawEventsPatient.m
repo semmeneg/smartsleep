@@ -1,18 +1,15 @@
-function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, ...
+function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, outputFolder, ...
     eventClasses, requiredEdfSignals, processEDF, processMSR, processZephyr )
 %PROCESSPATIENT Summary of this function goes here
 %   Detailed explanation goes here
 
-    patient = initPatientWithEvents( patientPath, patientFolder, false );
+    patient = initPatientWithEvents( patientPath, patientFolder, outputFolder, eventClasses );
     if ( isempty( patient.events ) )
         return;
     end
     
-    patient.filteredEvents = filterEvents( patient.events, eventClasses );
-    patient.filteredEvents.classes = eventClasses;
-    
     if ( processEDF )
-        edfDataFolder = [ patient.fullPath 'EDF\' ];
+        edfDataFolder = [ patient.rawDataPath 'EDF\' ];
         
         if ( ~ exist( edfDataFolder, 'dir' ) )
            warning( 'Missing EDF-Data folder in %s but EDF-flag set', patient.fullPath );
@@ -31,7 +28,7 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, ...
     end
     
     if ( processMSR )
-        msrDataFolder = [ patient.fullPath 'MSR\' ];
+        msrDataFolder = [ patient.rawDataPath 'MSR\' ];
         
         if ( ~ exist( msrDataFolder, 'dir' ) )
            warning( 'Missing MSR-Data folder in %s but MSR-flag set', patient.fullPath );
@@ -51,7 +48,7 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, ...
     end
     
     if ( processZephyr )
-        zephyrDataFolder = [ patient.fullPath 'Zephyr\' ];
+        zephyrDataFolder = [ patient.rawDataPath 'Zephyr\' ];
         
         if ( ~ exist( zephyrDataFolder, 'dir' ) )
            warning( 'Missing Zephyr-Data folder in %s but Zephyr-flag set', patient.fullPath );
@@ -62,7 +59,7 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, ...
             
             fprintf( 'Processing Zephyr %s ...', patient.zephyrFile );
             
-            [ patient.zephyr ] = zephyrRawByEvent( patient.zephyrFile, patient.filteredEvents );
+            [ patient.zephyr ] = zephyrRawByEvent( patient.zephyrFile, patient.filteredEvents);
 
             fprintf( 'finished.\n' );
         end

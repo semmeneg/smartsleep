@@ -1,15 +1,19 @@
-function [ dbn ] = trainPatientsFeatureEventsDBN( resultPath, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, varargin )
+function [ dbn ] = trainPatientsFeatureEventsDBN( dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, varargin )
 %trainPatientsFeatureEventsDBN load mat file with data, features and labels of each patient
 %   Set parameters like stratisfaction (training, validation and test
 %   data), DBN layer count and units, ...
 
     disp( ['DBN-Training on events of ' strjoin(varargin, ' & ') ' ...'] );
+    
+    trainedDataResultPath = [CONF.ALL_PATIENTS_TRAINED_DNB_DATA_PATH dataResultSubFolder '\'];
+    classifiedDataResultPath = [CONF.ALL_PATIENTS_CLASSIFIED_WEKA_DATA_PATH dataResultSubFolder '\'];
 
-    allPatientsDataFilePrefix = ['allpatients_EVENTS_' strjoin(varargin, '_') ];
+    allPatientsDataFilePrefix = ['allpatients_WINDOWS_' strjoin(varargin, '_') ];
     
     allData = [dataSet.trainData; dataSet.validationData; dataSet.testData ];
     
     params.extractFeatures = true;
+%     params.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
     params.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
     params.hiddenLayers = 2;    % NOTE: 2 is optimum, more hidden layers decrease classification 
     params.lastLayerHiddenUnits = params.hiddenUnitsCount;  % equals
@@ -28,12 +32,12 @@ function [ dbn ] = trainPatientsFeatureEventsDBN( resultPath, dataSet, eventClas
     totalCorrect = trace( cm );
     totalWrong = totalSamples - totalCorrect;
     
-    mkdir( resultPath );
-    resultPathAndFilenamePrefix = [ resultPath allPatientsDataFilePrefix ];    
+    mkdir( trainedDataResultPath );
+    trainedDataResultPathAndFilenamePrefix = [ trainedDataResultPath allPatientsDataFilePrefix ];    
     
-    fid = fopen( [ resultPathAndFilenamePrefix '_DBN.txt' ], 'w' );
+    fid = fopen( [ trainedDataResultPathAndFilenamePrefix '_DBN.txt' ], 'w' );
 
-    fprintf( fid, 'DNB ratios: traing=%4.2f validation=%4.2f test=%4.2f\n', dataStratificationRatios);    
+    fprintf( fid, 'DNB ratios: traing=%4.2f validation=%4.2f test=%4.2f\n', dataStratificationRatios);        
     
     fprintf( fid, '%s %12d\n', 'Total Number of Instances ', totalSamples );
     fprintf( fid, '%s %7d  %4.2f%%\n', 'Correctly Classified Instances', totalCorrect, 100 * ( totalCorrect / totalSamples ) );
@@ -45,7 +49,7 @@ function [ dbn ] = trainPatientsFeatureEventsDBN( resultPath, dataSet, eventClas
     printCMStandard( fid, eventClasses, transformCMToRelative( cm ), true );
     fclose( fid );
     
-    save( [ resultPathAndFilenamePrefix '_DBN.mat' ], 'dbn' );
+    save( [ trainedDataResultPathAndFilenamePrefix '_DBN.mat' ], 'dbn' );
     
     channelNames = cell( params.lastLayerHiddenUnits, 1 );
     
@@ -55,17 +59,21 @@ function [ dbn ] = trainPatientsFeatureEventsDBN( resultPath, dataSet, eventClas
     
     if(applyWekaClassifier)
         
-        arffFileName = [ resultPathAndFilenamePrefix '_DBNFEATURES.arff' ];
+        arffFileName = [ trainedDataResultPathAndFilenamePrefix '_DBNFEATURES.arff' ];
     
         exportGenericToWeka( dbn.features, allLabels, eventClasses, ...
             'Barmelweid DBN-Features', arffFileName, channelNames );
+        
+        mkdir(classifiedDataResultPath);
 
+        classifiedDataResultPathAndFilenamePrefix = [ classifiedDataResultPath allPatientsDataFilePrefix ];    
         trainWEKAModel( CONF.WEKA_PATH, arffFileName, ...
-            [ resultPathAndFilenamePrefix '_DBNFEATURES.model' ], ...
-            [ resultPathAndFilenamePrefix '_DBNFEATURES_WEKARESULT.txt' ] );
+            [ trainedDataResultPathAndFilenamePrefix '_DBNFEATURES.model' ], ...
+            [ classifiedDataResultPathAndFilenamePrefix '_DBNFEATURES_WEKARESULT.txt' ] );
         
         %appent Weka results to csv file
-        appendWekaResult2Csv(resultPath, 'cm.csv', varargin{:}); 
+        wekaResultFileName = [allPatientsDataFilePrefix '_DBNFEATURES_WEKARESULT.txt' ];
+        appendWekaResult2Csv(classifiedDataResultPath, wekaResultFileName, 'cm.csv', varargin{:}); 
     end
     
     disp( ['Finished DBN-Training on events ' strjoin(varargin, ' & ') '.'] );    

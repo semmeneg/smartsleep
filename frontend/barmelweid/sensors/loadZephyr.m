@@ -11,6 +11,7 @@ function [ zephyr ] = loadZephyr( zephyrSummaryFile, selectedChannels )
     timeStrs = table2cell( time );
     
     zephyr.data = table2array( t( :, selectedChannels ) );
+    zephyr.data = str2double(zephyr.data);
     zephyr.time = zeros( tableSize, 1 );
     
     for i = 1 : tableSize

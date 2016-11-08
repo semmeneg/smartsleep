@@ -1,4 +1,4 @@
-function [ allPatients ] = extractRawEventsPatientFolder( allPatientsPath, ...
+function [ allPatients ] = extractRawEventsPatientFolder( allPatientsPath, outputFolder, ...
     requiredEdfSignals, eventClasses, processEdf, processMsr, processZephyr )
 %PROCESSPATIENTS Summary of this function goes here
 %   Detailed explanation goes here
@@ -15,7 +15,7 @@ function [ allPatients ] = extractRawEventsPatientFolder( allPatientsPath, ...
 
     for i = 1 : patientCount
         patient = extractRawEventsPatient( allPatientsPath, ...
-            allPatientFolders( i ).name, ...
+            allPatientFolders( i ).name, outputFolder, ...
             eventClasses, requiredEdfSignals, ...
             processEdf, processMsr, processZephyr );
        
@@ -44,12 +44,12 @@ function [ allPatients ] = extractRawEventsPatientFolder( allPatientsPath, ...
         allData = [ allData; patient.combinedData ];
     end
 
-    smartSleepPath = [ allPatientsPath 'SmartSleep\Events\' ];
+    allCombinedOutputFolder = [ allPatientsPath 'all\2_preprocessed\' outputFolder '\' ];
     
-    mkdir( smartSleepPath );
+    mkdir( allCombinedOutputFolder );
     
-    eventsCombinedFileNamePrefix = [ smartSleepPath 'allpatients_RAWEVENTS' ];
-    matFileName = [ smartSleepPath 'allpatients_RAWEVENTS' ];
+    eventsCombinedFileNamePrefix = [ allCombinedOutputFolder 'allpatients_RAWEVENTS' ];
+    matFileName = [ allCombinedOutputFolder 'allpatients_RAWEVENTS' ];
     
     if ( processEdf )
         eventsCombinedFileNamePrefix = [ eventsCombinedFileNamePrefix '_EEG' ];
@@ -70,5 +70,4 @@ function [ allPatients ] = extractRawEventsPatientFolder( allPatientsPath, ...
     % switched to a matfile handle which overcomes the filesize limitation of the save function (2GB)
     matFileHandle = matfile(matFileName, 'Writable',true);
     matFileHandle.allPatients = allPatients;
-%     save( matFileName, 'allPatients' );
 end

@@ -1,7 +1,7 @@
 % Extract Weka Results from a all files in directory and write a combined
 % CSV file for further plots
 
-FOLDER = [CONF.getOutputPath() '\' '2016-10-18_00-02-23_PatientsGrouped_DNBRatio90-10-00\'];
+FOLDER = [ALL_PATIENTS_CLASSIFIED_WEKA_DATA_PATH '2016-10-18_00-02-23_PatientsGrouped_DNBRatio90-10-00\'];
 
 csvFile = [FOLDER 'cm.csv'];
 
