@@ -6,8 +6,7 @@ CONF.setup();
 
 disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );
  
- dataSourceSubFolder = '2016-11-08_Zephyr_RAW';
-%  dataResultSubFolder = '2016-11-09_Zephyr_RAW_Test'; 
+ dataSourceSubFolder = '2016-11-11_Zephyr_RAW';
  
  dataStratificationRatios = [0.9 0.1 0.0];
 %   dataStratificationRatios = [0.0001 0.0001 0.0];

@@ -1,6 +1,6 @@
 warning ( 'off', 'all' );
 
-OTUPUT_FOLDER = '2016-11-08_Zephyr_RAW';
+OTUPUT_FOLDER = '2016-11-11_Zephyr_RAW';
 
 % 30-sec events only !
 EVENT_CLASSES = { 'R', 'W', 'N1', 'N2', 'N3' };

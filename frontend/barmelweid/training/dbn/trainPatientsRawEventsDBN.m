@@ -18,22 +18,32 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
         allLabels = dataSet.trainLabels;
     end
     
-    % Setup RBM hidden layers parameters
-    rbmsParameters = [];
-    allDataSize = size( allData, 2 );
+ params.extractFeatures = true;
+%     params.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
+%     params.hiddenLayers = 2;    % NOTE: 2 is optimum, more hidden layers decrease classification 
+%     params.lastLayerHiddenUnits = params.hiddenUnitsCount;  % equals
+%     params.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
+    params.normalize = false;   % NOTE: MUST NOT do normalizing, would lead to catastrophic classification using feature-vectors due to min-max
+    params.sparse = false;      % NOTE: non-sparse seems to deliver better classification than with sparsity 
+
+    layers = [];
+    %RBM 1
+    layerParams1.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
+    layerParams1.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
+    layers = [layers layerParams1];
+    %RBM 2
+    layerParams2.hiddenUnitsCount = 4 * size( allData, 2 ); 
+    layerParams2.maxEpochs = 150; 
+    layers = [layers layerParams2];
     
-    % RBM Layer 1
-    rbmParams1 = createDefaultRbmParameters(allDataSize);
-    rbmsParameters = [rbmsParameters rbmParams1];
+    params.lastLayerHiddenUnits = layerParams2.hiddenUnitsCount;
     
-    % RBM Layer 2
-    rbmParams2 = createDefaultRbmParameters(allDataSize);
-    rbmsParameters = [rbmsParameters rbmParams2];
+    [ dbn ] = genericDBNTrain( dataSet, params, layers );
     
-    [ dbn ] = genericDBNTrain( dataSet, rbmsParameters );
-    dbn.features = dbn.net.getFeature(allData);
+    dbn.features = dbn.net.getFeature( allData );
 
     classifiedLabels = dbn.net.getOutput( allData );
+    
     
     [ cm ] = calcCM( eventClasses, classifiedLabels, allLabels);
     

@@ -14,7 +14,8 @@ function [ raw ] = zephyrRawByEvent( zephyrSummaryFile, events )
 %         'LateralMin', 'LateralPeak', 'SagittalMin', 'SagittalPeak' };
     
     selectedChannels = { 'HR', 'BR', 'PeakAccel', ...
-        'BRAmplitude', 'ECGAmplitude', 'VerticalMin', 'VerticalPeak', ...
+        'BRAmplitude', 'ECGAmplitude', ...
+        'VerticalMin', 'VerticalPeak', ...
         'LateralMin', 'LateralPeak', 'SagittalMin', 'SagittalPeak' };
     
     % if this channels have 0 values, then the event(row) shall be skiped 
@@ -62,7 +63,7 @@ function [ raw ] = zephyrRawByEvent( zephyrSummaryFile, events )
         columnToIdx = 1;
         
         samplesCount = length( dataIdx );
-        dataIdx = 1 : samplesCount;
+%         dataIdx = 1 : samplesCount;
 
         stepSize = samplesCount / SAMPLES_PER_CHANNEL;
         interpolationIdx = round( 1 : stepSize : samplesCount );
