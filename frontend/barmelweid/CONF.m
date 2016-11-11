@@ -3,11 +3,11 @@ classdef CONF
     %   
     
     properties(Constant)
-%         PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\';
-%         ALL_PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\all\';
+        PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\';
+        ALL_PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\all\';
 
-        PATIENTS_DATA_PATH = '\\VBOXSVR\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\';
-        ALL_PATIENTS_DATA_PATH = '\\VBOXSVR\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\all\';
+%         PATIENTS_DATA_PATH = '\\VBOXSVR\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\';
+%         ALL_PATIENTS_DATA_PATH = '\\VBOXSVR\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\all\';
         
         WEKA_PATH = 'C:\Program Files\Weka-3-8';
                 

@@ -11,13 +11,15 @@ function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath
     patientCount = length( allPatientFolders );
     
     allData = [];
+    allLabels = [];
     allChannels = [];
     allPatients = [];
     
     for i = 1 : patientCount
-        patient = exportFeatureWindowWEKAPatient( allPatientsPath, ...
+        labelAndDataMerger = PatientLablesAndDataMerger();
+        patient = labelAndDataMerger.exportFeatureWindowWEKAPatient( allPatientsPath, ...
             allPatientFolders( i ).name, outputFolder, ...
-            requiredEdfSignals, eventClasses, windowLength, ...
+            requiredEdfSignals, eventClasses, ...
             processEdf, processMsr, processZephyr );
 
         if ( false == combineAll )
@@ -58,6 +60,7 @@ function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath
         end
 
         allData = [ allData; patient.combinedData ];
+        allLabels = [ allLabels; patient.combinedLabels ];
     end
 
     if ( combineAll )
@@ -66,9 +69,9 @@ function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath
 
         mkdir( allCombinedOutputFolder );
 
-        relationName = 'All Patients SmartSleep Barmelweid (Windows';
+        relationName = 'All Patients SmartSleep Barmelweid (Events';
         relationName = sprintf( '%s %d) (', relationName, windowLength );
-        combinedFileNamePrefix = [ allCombinedOutputFolder 'allpatients_WINDOWS' ];
+        combinedFileNamePrefix = [ allCombinedOutputFolder 'allpatients_EVENTS' ];
 %         combinedFileNamePrefix = sprintf( '%s_%d', combinedFileNamePrefix, windowLength );
 
         if ( processEdf )
@@ -92,7 +95,7 @@ function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath
 
         save( matFileName, 'allPatients' );
 
-        exportGenericToWeka( allData, [], eventClasses, ...
-            relationName, combinedArffFile, allChannels );
+        exportGenericToWeka( allData, allLabels, eventClasses, ...
+        relationName, combinedArffFile, allChannels );
     end
 end

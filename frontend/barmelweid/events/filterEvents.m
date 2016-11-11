@@ -1,6 +1,5 @@
 function [ filteredEvents ] = filterEvents( events, filterEventClasses )
-%FILTEREVENTS Summary of this function goes here
-%   Detailed explanation goes here
+%filterEvents Filter events according given list of event classes.
 
     filteredEvents = events; 
     eventCount = length( events.time );

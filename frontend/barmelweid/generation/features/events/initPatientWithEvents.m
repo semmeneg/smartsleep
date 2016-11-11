@@ -42,6 +42,7 @@ function [ patient ] = initPatientWithEvents( patientPath, patientFolder, ...
         
     end
     
+    % filter events not belonging to defined eventClasses
     patient.filteredEvents = filterEvents( patient.events, eventClasses );
     patient.filteredEvents.classes = eventClasses;    
 end

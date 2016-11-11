@@ -10,21 +10,34 @@ function [ dbn ] = trainPatientsFeatureEventsDBN( dataResultSubFolder, dataSet, 
 
     allPatientsDataFilePrefix = ['allpatients_WINDOWS_' strjoin(varargin, '_') ];
     
-    allData = [dataSet.trainData; dataSet.validationData; dataSet.testData ];
+    if ( sum( [ dataStratificationRatios(1) dataStratificationRatios(2) dataStratificationRatios(3)] ) ~= 1.0 )
+        allData = [dataSet.trainData; dataSet.validationData; dataSet.testData ];
+        allLabels = [dataSet.trainLabels; dataSet.validationLabels; dataSet.testLabels ];
+    else
+        allData = dataSet.trainData;
+        allLabels = dataSet.trainLabels;
+    end
     
     params.extractFeatures = true;
 %     params.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
-    params.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
-    params.hiddenLayers = 2;    % NOTE: 2 is optimum, more hidden layers decrease classification 
-    params.lastLayerHiddenUnits = params.hiddenUnitsCount;  % equals
-    params.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
+%     params.hiddenLayers = 2;    % NOTE: 2 is optimum, more hidden layers decrease classification 
+%     params.lastLayerHiddenUnits = params.hiddenUnitsCount;  % equals
+%     params.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
     params.normalize = false;   % NOTE: MUST NOT do normalizing, would lead to catastrophic classification using feature-vectors due to min-max
     params.sparse = false;      % NOTE: non-sparse seems to deliver better classification than with sparsity 
 
-    [ dbn ] = genericDBNTrain( dataSet, params );
+    layers = [];
+    layerParams.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
+    layerParams.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
+    layers = [layers layerParams];
+    params.lastLayerHiddenUnits = layerParams.hiddenUnitsCount;
+    
+    [ dbn ] = genericDBNTrain( dataSet, params, layers );
+    
+    dbn.features = dbn.net.getFeature( allData );
 
     classifiedLabels = dbn.net.getOutput( allData );
-    allLabels = [dataSet.trainLabels; dataSet.validationLabels; dataSet.testLabels ];
+    
     
     [ cm ] = calcCM( eventClasses, classifiedLabels, allLabels);
     

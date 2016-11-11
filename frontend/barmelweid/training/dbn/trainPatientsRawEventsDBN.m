@@ -10,20 +10,30 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
 
     allPatientsDataFilePrefix = ['allpatients_RAWEVENTS_' strjoin(varargin, '_') ];
     
-    allData = [dataSet.trainData; dataSet.validationData; dataSet.testData ];
+    if ( sum( [ dataStratificationRatios(1) dataStratificationRatios(2) dataStratificationRatios(3)] ) ~= 1.0 )
+        allData = [dataSet.trainData; dataSet.validationData; dataSet.testData ];
+        allLabels = [dataSet.trainLabels; dataSet.validationLabels; dataSet.testLabels ];
+    else
+        allData = dataSet.trainData;
+        allLabels = dataSet.trainLabels;
+    end
     
-    params.extractFeatures = true;
-    params.hiddenUnitsCount = 4 * size(allData, 2);   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
-    params.hiddenLayers = 2;    % NOTE: 2 is optimum, more hidden layers decrease classification 
-    params.lastLayerHiddenUnits = params.hiddenUnitsCount;  % equals
-    params.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
-    params.normalize = false;   % NOTE: MUST NOT do normalizing, would lead to catastrophic classification using feature-vectors due to min-max
-    params.sparse = false;      % NOTE: non-sparse seems to deliver better classification than with sparsity 
-
-    [ dbn ] = genericDBNTrain( dataSet, params );
+    % Setup RBM hidden layers parameters
+    rbmsParameters = [];
+    allDataSize = size( allData, 2 );
+    
+    % RBM Layer 1
+    rbmParams1 = createDefaultRbmParameters(allDataSize);
+    rbmsParameters = [rbmsParameters rbmParams1];
+    
+    % RBM Layer 2
+    rbmParams2 = createDefaultRbmParameters(allDataSize);
+    rbmsParameters = [rbmsParameters rbmParams2];
+    
+    [ dbn ] = genericDBNTrain( dataSet, rbmsParameters );
+    dbn.features = dbn.net.getFeature(allData);
 
     classifiedLabels = dbn.net.getOutput( allData );
-    allLabels = [dataSet.trainLabels; dataSet.validationLabels; dataSet.testLabels ];
     
     [ cm ] = calcCM( eventClasses, classifiedLabels, allLabels);
     
@@ -36,9 +46,9 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
     
     save( [ trainedDataResultPathAndFilenamePrefix '_DBN.mat' ], 'dbn' );
     
-    channelNames = cell( params.lastLayerHiddenUnits, 1 );
+    channelNames = cell( size(dbn.features,2), 1 );
     
-    for i = 1 : params.lastLayerHiddenUnits
+    for i = 1 : size(dbn.features,2)
         channelNames{ i } = sprintf( 'FEATURE_%d', i );
     end
     
@@ -60,4 +70,16 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
         wekaResultFileName = [allPatientsDataFilePrefix '_DBN_WEKARESULT.txt' ];
         appendWekaResult2Csv(classifiedDataResultPath, wekaResultFileName, 'cm_raw.csv', varargin{:}); 
     end
+end
+
+function [defaultRbmParameters] = createDefaultRbmParameters(allDataSize)
+
+     defaultHiddenUnitsCount = 4 * allDataSize; % PAPER: Paper takes 4 times the input size, NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
+     defaultMaxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
+    
+    defaultRbmParameters = RbmParameters( defaultHiddenUnitsCount, ValueType.binary );
+    defaultRbmParameters.samplingMethodType = SamplingClasses.SamplingMethodType.CD;
+    defaultRbmParameters.performanceMethod = 'reconstruction';
+    defaultRbmParameters.maxEpoch = defaultMaxEpochs;
+    defaultRbmParameters.sparsity = false; % NOTE: non-sparse seems to deliver better classification than with sparsity 
 end

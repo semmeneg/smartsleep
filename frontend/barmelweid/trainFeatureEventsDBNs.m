@@ -1,12 +1,14 @@
 
 tic
 
+clear();
+
 CONF.setup();
 
  disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );
  
-dataSourceSubFolder = '2016-11-08_Zephyr_Features';
-dataResultSubFolder = '2016-11-08_Zephyr_Features_2_hidden_1_classification_layer'; 
+dataSourceSubFolder = '2016-11-10_Features';
+dataResultSubFolder = '2016-11-10_Features';
 
 % dataSourceSubFolder = '2016-06';
 % dataResultSubFolder = '2016-06';
@@ -21,7 +23,7 @@ feautreFilter = [];
 %  splitByPatients = false;
 %  feautreFilter = [];
 
-fileNamePrefix = 'allpatients_WINDOWS_';
+fileNamePrefix = 'allpatients_EVENTS_';
 
 applyWekaClassifier = true;
  
@@ -32,33 +34,33 @@ applyWekaClassifier = true;
  end
 
 %  % EEG
-%  [dataSet, eventClasses] = createFilteredFeaturesDataSet(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.EEG);
-%  trainPatientsFeatureEventsDBN(outputPath, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.EEG);
+%  [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.EEG);
+%  trainPatientsFeatureEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.EEG);
 %  
-%  % EEG & MSR
-%  [dataSet, eventClasses] = createFilteredFeaturesDataSet(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.EEG, DATA_SOURCE.MSR);
-%  trainPatientsFeatureEventsDBN(outputPath, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.EEG, DATA_SOURCE.MSR);
-%  
+ % EEG & MSR
+ [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.EEG, DATA_SOURCE.MSR);
+ trainPatientsFeatureEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.EEG, DATA_SOURCE.MSR);
+ 
 %  % EEG & MSR & ZEPHYR
-%  [dataSet, eventClasses] = createFilteredFeaturesDataSet(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.EEG, DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
-%  trainPatientsFeatureEventsDBN(outputPath, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.EEG, DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
+%  [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.EEG, DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
+%  trainPatientsFeatureEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.EEG, DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
 %  
 %  % EEG & ZEPHYR
-%  [dataSet, eventClasses] = createFilteredFeaturesDataSet(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.EEG, DATA_SOURCE.ZEPHYR);
-%  trainPatientsFeatureEventsDBN(outputPath, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.EEG, DATA_SOURCE.ZEPHYR);
+%  [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.EEG, DATA_SOURCE.ZEPHYR);
+%  trainPatientsFeatureEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.EEG, DATA_SOURCE.ZEPHYR);
 %  
-%  % MSR
-%  [dataSet, eventClasses] = createFilteredFeaturesDataSet(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.MSR);
-%  trainPatientsFeatureEventsDBN(outputPath, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.MSR);
+%  MSR
+%  [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.MSR);
+%  trainPatientsFeatureEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.MSR);
 % 
 %  % MSR & ZEPHYR
-%  [dataSet, eventClasses] = createFilteredFeaturesDataSet(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
-%  trainPatientsFeatureEventsDBN(outputPath, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
-
- % ZEPHYR
- [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.ZEPHYR);
- trainPatientsFeatureEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.ZEPHYR);
- 
+%  [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
+%  trainPatientsFeatureEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
+% 
+%  % ZEPHYR
+%  [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios,  DATA_SOURCE.ZEPHYR);
+%  trainPatientsFeatureEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, DATA_SOURCE.ZEPHYR);
+%  
 
  disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );
 toc

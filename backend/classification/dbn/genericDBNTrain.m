@@ -1,4 +1,4 @@
-function [ dbn ] = genericDBNTrain( dataSet, hiddenLayerDefs )
+function [ dbn ] = genericDBNTrain( dataSet, params, layers )
 %GENERICDBNTRAIN Trains DBN with Random Bolzman Machine
 % Uses DBN class from DeeBNet toolbox. 
 
@@ -18,23 +18,23 @@ function [ dbn ] = genericDBNTrain( dataSet, hiddenLayerDefs )
     
     dbn.dataSet.shuffle();
     
-    % INFLUENCE: increasing number of hidden layers seems to REDUCE the
-    % classification performance
-    hiddenLayers = params.hiddenLayers;
-    % PAPER: Paper takes 4 times the input size
-    hiddenUnitsCount = params.hiddenUnitsCount; %size( dbn.dataSet.trainData, 2 );
-    % INFLUENCE: increasing max epochs help a bit but 100 is enough
-    maxEpochs = params.maxEpochs;
+%     % INFLUENCE: increasing number of hidden layers seems to REDUCE the
+%     % classification performance
+%     hiddenLayers = params.hiddenLayers;
+%     % PAPER: Paper takes 4 times the input size
+%     hiddenUnitsCount = params.hiddenUnitsCount; %size( dbn.dataSet.trainData, 2 );
+%     % INFLUENCE: increasing max epochs help a bit but 100 is enough
+%     maxEpochs = params.maxEpochs;
     % INFLUENCE: sparsity ?
     sparsity = params.sparse;
     
     dbn.net = DBN( 'classifier' );
 
-    for i = 1 : hiddenLayers
-        rbmParams = RbmParameters( hiddenUnitsCount, ValueType.binary );
+    for layer = layers
+        rbmParams = RbmParameters( layer.hiddenUnitsCount, ValueType.binary );
         rbmParams.samplingMethodType = SamplingClasses.SamplingMethodType.CD;
         rbmParams.performanceMethod = 'reconstruction';
-        rbmParams.maxEpoch = maxEpochs;
+        rbmParams.maxEpoch = layer.maxEpochs;
         rbmParams.sparsity = sparsity;
         dbn.net.addRBM( rbmParams );
     end
@@ -57,7 +57,4 @@ function [ dbn ] = genericDBNTrain( dataSet, hiddenLayerDefs )
     dbn.net.backpropagation( dbn.dataSet );
     fprintf('DBN backpropagation time used: %f seconds.\n', toc(tStart));
     
-    if ( params.extractFeatures )
-        dbn.features = dbn.net.getFeature( [dataSet.trainData; dataSet.validationData; dataSet.testData ] );
-    end
 end

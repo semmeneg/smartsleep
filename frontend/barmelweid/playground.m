@@ -1,27 +1,29 @@
 
-% appendWekaResult2Csv('\\VBOXSVR\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\all\4_classified\Weka\2016-11-03_zephyrOnly_ohne_entropy_und_maxFreq\', 'cm.csv', DATA_SOURCE.ZEPHYR);
-
-a = 1:2:20;
-disp(a);
-
-% a = [1.2,2.2,3.2,4.2,5.2,6.2];
-% b = [2.2,4.2,5.2];
+files = dir('C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\all\2_preprocessed\2016-11-11_Features\*.mat');
+for i = 1 : length(files)
+    disp(files(i).name);
+    load([files(i).folder '\' files(i).name]);
+    for patient = allPatients
+        p = patient{1};
+        dataSize = size(p.combinedData, 2);
+%         labelsSize = size(p.combinedLabels, 1);
+%         diff = dataSize - labelsSize;
+%         if(diff>0)
+            disp(sprintf('%s cols: %d',p.folder,dataSize));
+%         end
+    end    
+end
+        
+% a = [1,2,3;0,0,4;5,6,7;0,8,9;10,0,11];
 % disp(a);
-% disp(find(ismember(a,b)));
+% 
+% idx = [2;3;4];
+% b = a(idx,1);
+% disp(b);
+% idx = idx(any(a(idx,1),2));
+% disp(idx);
+% 
+% disp(a(idx,:));
 
-
-
-
-%  startSecond = 57;
-%  time = 1455143816.00000;  %'... 36:56'
- % time = (time - mod(time,60)) + 60 + startSecond;
- % time = TimeUtils.getPreviousTimeWithSameSeconds(time, startSecond);
-%  unix_epoch = datenum(1970,1,1,0,0,0);
-%  time = (time + unix_epoch * 86400)/86400;
-%  disp(datestr(time));
-
-% time = 1455143816.00000;
-% time = (time - mod(time,60)) - 60 + startSecond;
-% unix_epoch = datenum(1970,1,1,0,0,0);
-% time = (time + unix_epoch * 86400)/86400;
-% disp(datestr(time));
+% time = 1.256622956352000e+14;
+% disp(datestr(datetime));

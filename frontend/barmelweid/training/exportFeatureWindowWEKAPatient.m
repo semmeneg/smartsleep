@@ -30,9 +30,14 @@ function [ patient ] = exportFeatureWindowWEKAPatient( patientPath, patientFolde
     patient.eventFile = eventFile;
     patient.events = events;
           
-    startSeconds = mod(events.time(1), 60);
-        
-    
+    % Search for the seconds part of the first event with full window
+    % length. The second part is used for the merge/synchronization of the
+    % data.
+    firstWindowLengthEntryIdx = find(events.durations == windowLength);
+    if(isempty(firstWindowLengthEntryIdx))
+         return; %no labels available for full window length, skip export !
+    end
+    startSeconds = mod(events.time(firstWindowLengthEntryIdx(1)), 60); 
     
     if ( processEDF )
         edfDataFolder = [ patient.rawDataPath 'EDF\' ];
@@ -133,28 +138,28 @@ function [ patient ] = exportFeatureWindowWEKAPatient( patientPath, patientFolde
     patient.combinedChannels = [];
     patient.combinedLabels = [];
     
-    if ( ~ isempty( patient.edf ) )
-        startTime( end + 1 ) = patient.edf.startTime;
-        endTime( end + 1 ) = patient.edf.endTime;
-    end
-    
-    if ( ~ isempty( patient.msr ) )
-        startTime( end + 1 ) = patient.msr.startTime;
-        endTime( end + 1 ) = patient.msr.endTime;
-    end
-    
-    if ( ~ isempty( patient.zephyr ) )
-        startTime( end + 1 ) = patient.zephyr.startTime;
-        endTime( end + 1 ) = patient.zephyr.endTime;
-    end
-    
-    if ( isempty( startTime ) );
-        warning( 'PATIENT:nodata', 'Patient has no relevant data (EDF, MSR or ZEPHYR) - ignoring patient %s', patientFolder );
-        return;
-    end
-    
-    combinedStartTime = max( startTime );
-    combinedEndTime = min( endTime );
+%     if ( ~ isempty( patient.edf ) )
+%         startTime( end + 1 ) = patient.edf.startTime;
+%         endTime( end + 1 ) = patient.edf.endTime;
+%     end
+%     
+%     if ( ~ isempty( patient.msr ) )
+%         startTime( end + 1 ) = patient.msr.startTime;
+%         endTime( end + 1 ) = patient.msr.endTime;
+%     end
+%     
+%     if ( ~ isempty( patient.zephyr ) )
+%         startTime( end + 1 ) = patient.zephyr.startTime;
+%         endTime( end + 1 ) = patient.zephyr.endTime;
+%     end
+%     
+%     if ( isempty( startTime ) );
+%         warning( 'PATIENT:nodata', 'Patient has no relevant data (EDF, MSR or ZEPHYR) - ignoring patient %s', patientFolder );
+%         return;
+%     end
+%     
+%     combinedStartTime = max( startTime );
+%     combinedEndTime = min( endTime );
 
     relationName = [ patientFolder ' SmartSleep Barmelweid (Windows' ];
     relationName = sprintf( '%s %d) (', relationName, windowLength );
@@ -203,7 +208,7 @@ function [ patient ] = exportFeatureWindowWEKAPatient( patientPath, patientFolde
     relationName = [ relationName ')' ];
     combinedArffFile = [ combinedFileNamePrefix '.arff' ];
 
-    exportGenericToWeka( patient.combinedData, [], eventClasses, ...
+    exportGenericToWeka( patient.combinedData, patient.combinedLabels, eventClasses, ...
         relationName, combinedArffFile, patient.combinedChannels );
 end
 
