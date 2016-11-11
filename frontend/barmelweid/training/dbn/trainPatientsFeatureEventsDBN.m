@@ -27,10 +27,16 @@ function [ dbn ] = trainPatientsFeatureEventsDBN( dataResultSubFolder, dataSet, 
     params.sparse = false;      % NOTE: non-sparse seems to deliver better classification than with sparsity 
 
     layers = [];
-    layerParams.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
-    layerParams.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
-    layers = [layers layerParams];
-    params.lastLayerHiddenUnits = layerParams.hiddenUnitsCount;
+    %RBM 1
+    layerParams1.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
+    layerParams1.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
+    layers = [layers layerParams1];
+    %RBM 2
+    layerParams2.hiddenUnitsCount = 4 * size( allData, 2 ); 
+    layerParams2.maxEpochs = 150; 
+    layers = [layers layerParams2];
+    
+    params.lastLayerHiddenUnits = layerParams2.hiddenUnitsCount;
     
     [ dbn ] = genericDBNTrain( dataSet, params, layers );
     
