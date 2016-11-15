@@ -36,23 +36,23 @@ for WINDOW_LENGTH = ALL_WINDOW_LENGTHS
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );
     fprintf( 'Extracting %d-sec windows ...\n', WINDOW_LENGTH );
     
-%     % EEG only
-%     disp( 'Extracting feature-windows of EEG ONLY ...' );
-%     exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
-%         EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, false, false );
-%     disp( 'Finished extracting feature-windows of EEG ONLY.' );
-% 
-%     % MSR only
-%     disp( 'Extracting feature-windows of MSR ONLY ...' );
-%     exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
-%         EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, false, true, false );
-%     disp( 'Finished extracting feature-windows of MSR ONLY ...' );
-% 
-%     % ZEPHYR only
-%     disp( 'Extracting feature-windows of ZEPHYR ONLY ...' );
-%     exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
-%         EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, false, false, true );
-%     disp( 'Finished extracting feature-windows of ZEPHYR ONLY.' );
+    % EEG only
+    disp( 'Extracting feature-windows of EEG ONLY ...' );
+    exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+        EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, true, false, false );
+    disp( 'Finished extracting feature-windows of EEG ONLY.' );
+
+    % MSR only
+    disp( 'Extracting feature-windows of MSR ONLY ...' );
+    exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+        EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, false, true, false );
+    disp( 'Finished extracting feature-windows of MSR ONLY ...' );
+
+    % ZEPHYR only
+    disp( 'Extracting feature-windows of ZEPHYR ONLY ...' );
+    exportFeatureWindowWEKAPatientFolder( CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+        EVENT_CLASSES, WINDOW_LENGTH, COMBINE_ALL, false, false, true );
+    disp( 'Finished extracting feature-windows of ZEPHYR ONLY.' );
 
     % MSR & ZEPHYR
     disp( 'Extracting feature-windows of MSR & ZEPHYR ...' );

@@ -26,8 +26,6 @@ function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath
             continue;
         end
         
-        allPatients{ end + 1 } = patient;
-
         % EDF required but patient has no edf-data
         if ( processEdf && isempty( patient.edf ) )
             continue;
@@ -58,7 +56,8 @@ function [ allPatients ] = exportFeatureWindowWEKAPatientFolder( allPatientsPath
                     'Patient %s channels do not match global channels', patient.folder );
             end
         end
-
+        
+        allPatients{ end + 1 } = patient;
         allData = [ allData; patient.combinedData ];
         allLabels = [ allLabels; patient.combinedLabels ];
     end

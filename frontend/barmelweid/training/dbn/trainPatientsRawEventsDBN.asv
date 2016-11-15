@@ -26,8 +26,7 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
     %RBM 1
 %     layerParams1.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
     layerParams1.hiddenUnitsCount = floor(size( allData, 2 ) / 2);
-%     layerParams1.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
-    layerParams1.maxEpochs = 50;
+    layerParams1.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
     layers = [layers layerParams1];
     %RBM 2
     layerParams2.hiddenUnitsCount = 4 * size( allData, 2 ); 

@@ -130,36 +130,9 @@ function [ patient ] = exportFeatureWindowWEKAPatient( patientPath, patientFolde
         end
     end
     
-
-    startTime = [];
-    endTime = [];
-  
     patient.combinedData = [];
     patient.combinedChannels = [];
     patient.combinedLabels = [];
-    
-%     if ( ~ isempty( patient.edf ) )
-%         startTime( end + 1 ) = patient.edf.startTime;
-%         endTime( end + 1 ) = patient.edf.endTime;
-%     end
-%     
-%     if ( ~ isempty( patient.msr ) )
-%         startTime( end + 1 ) = patient.msr.startTime;
-%         endTime( end + 1 ) = patient.msr.endTime;
-%     end
-%     
-%     if ( ~ isempty( patient.zephyr ) )
-%         startTime( end + 1 ) = patient.zephyr.startTime;
-%         endTime( end + 1 ) = patient.zephyr.endTime;
-%     end
-%     
-%     if ( isempty( startTime ) );
-%         warning( 'PATIENT:nodata', 'Patient has no relevant data (EDF, MSR or ZEPHYR) - ignoring patient %s', patientFolder );
-%         return;
-%     end
-%     
-%     combinedStartTime = max( startTime );
-%     combinedEndTime = min( endTime );
 
     relationName = [ patientFolder ' SmartSleep Barmelweid (Windows' ];
     relationName = sprintf( '%s %d) (', relationName, windowLength );

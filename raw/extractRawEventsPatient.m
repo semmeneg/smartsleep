@@ -8,6 +8,8 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, outp
         return;
     end
     
+    combinedDataEventTimes = []; % intersection over all data sources event start times
+    
     if ( processEDF )
         edfDataFolder = [ patient.rawDataPath 'EDF\' ];
         
@@ -22,6 +24,14 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, outp
 
             [ patient.edf ] = edfRawByEvent( patient.edfFile, ...
                 requiredEdfSignals, patient.filteredEvents );
+            
+            if(~isempty(patient.edf))
+                if ( isempty( combinedDataEventTimes ) )
+                    combinedDataEventTimes = patient.edf.time;
+                else
+                    combinedDataEventTimes = intersect( patient.edf.includedEvents, combinedDataWindowTimes );
+                end              
+            end                       
 
             fprintf( 'finished.\n' );
         end
@@ -43,6 +53,14 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, outp
             
             [ patient.msr ] = msrRawByEvent( patient.msrFiles, patient.filteredEvents );
             
+            if(~isempty(patient.msr))
+                if ( isempty( combinedDataEventTimes ) )
+                    combinedDataEventTimes = patient.msr.time;
+                else
+                    combinedDataEventTimes = intersect( patient.msr.includedEvents, combinedDataWindowTimes );
+                end              
+            end              
+            
             fprintf( 'finished.\n' );
         end
     end
@@ -60,58 +78,37 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, outp
             fprintf( 'Processing Zephyr %s ...', patient.zephyrFile );
             
             [ patient.zephyr ] = zephyrRawByEvent( patient.zephyrFile, patient.filteredEvents);
+            
+            if(~isempty(patient.zephyr))
+                if ( isempty( combinedDataEventTimes ) )
+                    combinedDataEventTimes = patient.zephyr.time;
+                else
+                    combinedDataEventTimes = intersect( patient.zephyr.includedEvents, combinedDataWindowTimes );
+                end              
+            end            
 
             fprintf( 'finished.\n' );
         end
     end
 
-    startIndices = [];
-    endIndices = [];
-    
-    if ( ~ isempty( patient.edf ) )
-        startIndices( end + 1 ) = patient.edf.startEventIdx;
-        endIndices( end + 1 ) = patient.edf.endEventIdx;
-    end
-    
-    if ( ~ isempty( patient.msr ) )
-        startIndices( end + 1 ) = patient.msr.startEventIdx;
-        endIndices( end + 1 ) = patient.msr.endEventIdx;
-    end
-    
-    if ( ~ isempty( patient.zephyr ) )
-        startIndices( end + 1 ) = patient.zephyr.startEventIdx;
-        endIndices( end + 1 ) = patient.zephyr.endEventIdx;
-    end
-    
-    if ( isempty( startIndices ) );
-        warning( 'PATIENT:nodata', 'Patient has no relevant data (EDF, MSR or ZEPHYR) - ignoring patient %s', patientFolder );
-        return;
-    end
-    
-    combinedStartIdx = max( startIndices );
-    combinedEndIdx = min( endIndices );
-    
     patient.combinedData = [];
     patient.combinedLabels = [];
     
     if ( ~ isempty( patient.edf ) )
-        patient.combinedData = [ patient.combinedData  patient.edf.data( combinedStartIdx : combinedEndIdx, : ) ];
-        if ( isempty( patient.combinedLabels ) )
-            patient.combinedLabels = patient.edf.labels( combinedStartIdx : combinedEndIdx );
-        end
+        dataIdx = find(ismember(patient.edf.time, combinedDataEventTimes));
+        patient.combinedData = [ patient.combinedData patient.edf.data( dataIdx, : ) ];
+        patient.combinedLabels = [ patient.combinedLabels patient.edf.labels(dataIdx) ];
     end
     
     if ( ~ isempty( patient.msr ) )
-        patient.combinedData = [ patient.combinedData  patient.msr.data( combinedStartIdx : combinedEndIdx, : ) ];
-        if ( isempty( patient.combinedLabels ) )
-            patient.combinedLabels = patient.msr.labels( combinedStartIdx : combinedEndIdx );
-        end
+        dataIdx = find(ismember(patient.msr.time, combinedDataEventTimes));
+        patient.combinedData = [ patient.combinedData patient.msr.data( dataIdx, : ) ];
+        patient.combinedLabels = [ patient.combinedLabels patient.msr.labels(dataIdx) ];
     end
     
     if ( ~ isempty( patient.zephyr ) )
-        patient.combinedData = [ patient.combinedData patient.zephyr.data( combinedStartIdx : combinedEndIdx, : ) ];
-        if ( isempty( patient.combinedLabels ) )
-            patient.combinedLabels = patient.zephyr.labels( combinedStartIdx : combinedEndIdx );
-        end
+        dataIdx = find(ismember(patient.zephyr.time, combinedDataEventTimes));
+        patient.combinedData = [ patient.combinedData patient.zephyr.data( dataIdx, : ) ];
+        patient.combinedLabels = [ patient.combinedLabels patient.zephyr.labels(dataIdx) ];
     end
 end
