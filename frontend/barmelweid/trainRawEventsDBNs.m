@@ -7,16 +7,16 @@ CONF.setup();
 disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );
  
  dataSourceSubFolder = '2016-11-14_RAW_MSR';
- dataResultSubFolder = '2016-11-14_RAW_MSR';
+ dataResultSubFolder = '2016-11-15_RAW_MSR';
  
- dataStratificationRatios = [0.9 0.1 0.0];
+ dataStratificationRatios = [0.8 0.2 0.0];
 %   dataStratificationRatios = [0.0001 0.0001 0.0];
 
 %  splitByPatients = true; %If true, data stratification is applied the group of patients, otherwise to the combined data set of all patients is stratisfied.
 %  testDescription = 'Patients split ';
  
  testDescription = 'Combined data split';
- splitByPatients = false;
+ splitByPatients = true;
  
  applyWekaClassifier = true;
  outputPath = [CONF.getRawDataOutputPathWithTimestamp() '\'];

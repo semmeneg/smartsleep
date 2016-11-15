@@ -2,7 +2,7 @@ warning ( 'off', 'all' );
 
 clear();
 
-OTUPUT_FOLDER = '2016-11-14_RAW_MSR';
+OTUPUT_FOLDER = '2016-11-15_RAW_MSR_L1_886Units_';
 
 % 30-sec events only !
 EVENT_CLASSES = { 'R', 'W', 'N1', 'N2', 'N3' };
