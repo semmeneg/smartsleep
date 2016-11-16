@@ -12,6 +12,7 @@ function [ raw ] = msrRawByEvent( msrMatFiles, events )
     eventCount = length( events.time );
 
     raw.data = zeros( eventCount, sensorsCount * MSR_CHANNELS * SAMPLES_PER_CHANNEL );
+    raw.time = zeros( eventCount, 1 );
     raw.labels = zeros( eventCount, 1 );
     
     skippedEventIdx = [];
@@ -71,12 +72,12 @@ function [ raw ] = msrRawByEvent( msrMatFiles, events )
     
     % remove skiped events
     raw.data(skippedEventIdx,:) = [];
-    raw.time(:, skippedEventIdx) = [];
+    raw.time(skippedEventIdx,:) = [];
     raw.labels(skippedEventIdx,:) = [];
     
     %remove empty event rows
     raw.data( ~any(raw.data,2), : ) = [];
-    raw.time(: , ~any(raw.time,1)) = [];
+    raw.time( ~any(raw.time,2), : ) = [];
     raw.labels( ~any(raw.labels,2), : ) = [];
     
 end

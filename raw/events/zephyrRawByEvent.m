@@ -26,6 +26,7 @@ function [ raw ] = zephyrRawByEvent( zephyrSummaryFile, events )
     eventCount = length( events.time );
     
     raw.data = zeros( eventCount, channelsCount * SAMPLES_PER_CHANNEL );
+    raw.time = zeros( eventCount, 1 );
     raw.labels = zeros( eventCount, 1 );
     
     zephyr = loadZephyr( zephyrSummaryFile, selectedChannels );
@@ -55,17 +56,21 @@ function [ raw ] = zephyrRawByEvent( zephyrSummaryFile, events )
             continue;
         end
         
-        raw.endEventIdx = i;
         eventData = zephyr.data(dataIdx, : );
         
-        
         % skip event if one value of required channels value is 0
+        skipEventWindow = false;
         for channel = zeroValueFilterChannels
             channelId = strmatch(channel, selectedChannels, 'exact');
             if( sum(~any(eventData(:,channelId),2)) > 0) 
-                raw.skippedEvents = raw.skippedEvents + 1;
-                continue;
+                skipEventWindow = true;
+                break;
             end
+        end
+        
+        if(skipEventWindow)
+            raw.skippedEvents = raw.skippedEvents + 1;
+            continue;
         end
         
         if(size(eventData,1) ~= SAMPLES_PER_CHANNEL)
@@ -84,10 +89,9 @@ function [ raw ] = zephyrRawByEvent( zephyrSummaryFile, events )
         raw.time(i) = eventStartTime;
     end
     
-    %remove empty rows at the end of the matrices which were initalized
-    %with the full size
+    %remove empty entries (0 - value rows for data and labels and 0 - value columns for the time)
     raw.data( ~any(raw.data,2), : ) = [];
-    raw.time(: , ~any(raw.time,1)) = [];
+    raw.time( ~any(raw.time,2), : ) = [];
     raw.labels( ~any(raw.labels,2), : ) = [];
 end
 
