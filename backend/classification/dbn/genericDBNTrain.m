@@ -1,4 +1,4 @@
-function [ dbn ] = genericDBNTrain( dataSet, params, layers )
+function [ dbn ] = genericDBNTrain( dataSet, params, layers, backpropagation)
 %GENERICDBNTRAIN Trains DBN with Random Bolzman Machine
 % Uses DBN class from DeeBNet toolbox. 
 
@@ -49,12 +49,16 @@ function [ dbn ] = genericDBNTrain( dataSet, params, layers )
 
     %train
     tStart = tic;
+    fprintf('Start DBN training: %s.\n', datetime);
     dbn.net.train( dbn.dataSet );
     fprintf('DBN train time used: %f seconds.\n', toc(tStart));
     
     %backpropagation
-    tStart = tic;
-    dbn.net.backpropagation( dbn.dataSet );
-    fprintf('DBN backpropagation time used: %f seconds.\n', toc(tStart));
+    if (backpropagation)
+        tStart = tic;
+        fprintf('Start backpropagation training: %s.\n', datetime);
+        dbn.net.backpropagation( dbn.dataSet );
+        fprintf('DBN backpropagation time used: %f seconds.\n', toc(tStart));
+    end
     
 end

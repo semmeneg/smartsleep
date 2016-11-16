@@ -1,4 +1,4 @@
-function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyWekaClassifier, varargin )
+function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyDBNClassifier, applyWekaClassifier, varargin )
 %trainPatientsRawEventsDBN load raw data mat file with data, features and labels of each patient
 %   Set parameters like stratisfaction (training, validation and test
 %   data), DBN layer count and units, 
@@ -24,35 +24,39 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
 
     layers = [];
     %RBM 1
-%     layerParams1.hiddenUnitsCount = 4 * size( allData, 2 );   % NOTE: more hidden-units increase performance dramatically, 4 is best, beyond that only increase in training-time but not classification performance
-    layerParams1.hiddenUnitsCount = floor(size( allData, 2 ) / 2);
-%     layerParams1.maxEpochs = 150;     % NOTE: 150 Epochs seem to be enough, more would only increase training time but not classification
-    layerParams1.maxEpochs = 50;
+    layerParams1.hiddenUnitsCount = 4 * size( allData, 2 );
+    layerParams1.maxEpochs = 150;
+%     layerParams1.hiddenUnitsCount = floor(size( allData, 2 ) / 4);
+%     layerParams1.maxEpochs = 50;
     layers = [layers layerParams1];
+    
     %RBM 2
-    layerParams2.hiddenUnitsCount = 4 * size( allData, 2 ); 
+    layerParams2.hiddenUnitsCount = 4 * size( allData, 2 );
     layerParams2.maxEpochs = 150; 
     layers = [layers layerParams2];
     
     params.lastLayerHiddenUnits = layerParams2.hiddenUnitsCount;
     
-    [ dbn ] = genericDBNTrain( dataSet, params, layers );
+    [ dbn ] = genericDBNTrain( dataSet, params, layers, applyDBNClassifier );
     
     dbn.features = dbn.net.getFeature( allData );
-
-    classifiedLabels = dbn.net.getOutput( allData );
     
-    
-    [ cm ] = calcCM( eventClasses, classifiedLabels, allLabels);
-    
+    trainedDataResultPathAndFilenamePrefix = [ trainedDataResultPath allPatientsDataFilePrefix ];
     mkdir( trainedDataResultPath );
-    trainedDataResultPathAndFilenamePrefix = [ trainedDataResultPath allPatientsDataFilePrefix ];    
+
+    % get labels classified by DBN if enabled
+    if (applyDBNClassifier)
+        classifiedLabels = dbn.net.getOutput( allData );
+        [ mc ] = calcCM( eventClasses, classifiedLabels, allLabels);
+        fid = fopen( [ trainedDataResultPathAndFilenamePrefix '_DBN.txt' ], 'w' );
+        printCM( fid, eventClasses, cm );
+        fclose( fid );
+    end
     
-    fid = fopen( [ trainedDataResultPathAndFilenamePrefix '_DBN.txt' ], 'w' );
-    printCM( fid, eventClasses, cm );
-    fclose( fid );
-    
+    tStart = tic;
+    fprintf('Start saving DBN trained model: %s.\n', datetime);
     save( [ trainedDataResultPathAndFilenamePrefix '_DBN.mat' ], 'dbn' );
+    fprintf('Time used for saving DBN trained model: %f seconds.\n', toc(tStart));
     
     channelNames = cell( size(dbn.features,2), 1 );
     
@@ -64,19 +68,26 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
         
         arffFileName = [ trainedDataResultPathAndFilenamePrefix '_DBN.arff' ];
     
+        tStart = tic;
+        fprintf('Start saving DBN output to ARFF file for Weka: %s.\n', datetime);
         exportGenericToWeka( dbn.features, allLabels, eventClasses, ...
             'Barmelweid DBN on raw data', arffFileName, channelNames );
+        fprintf('Time used saving DBN output to ARFF file: %f seconds.\n', toc(tStart));
         
         mkdir(classifiedDataResultPath);
 
         classifiedDataResultPathAndFilenamePrefix = [ classifiedDataResultPath allPatientsDataFilePrefix ];    
+
+        tStart = tic;
+        fprintf('Start Weka classification training: %s.\n', datetime);
         trainWEKAModel( CONF.WEKA_PATH, arffFileName, ...
             [ trainedDataResultPathAndFilenamePrefix '_DBN.model' ], ...
             [ classifiedDataResultPathAndFilenamePrefix '_DBN_WEKARESULT.txt' ] );
+        fprintf('Weka training time used: %f seconds.\n', toc(tStart));
         
         %appent Weka results to csv file
         wekaResultFileName = [allPatientsDataFilePrefix '_DBN_WEKARESULT.txt' ];
-        appendWekaResult2Csv(classifiedDataResultPath, wekaResultFileName, 'cm_raw.csv', varargin{:}); 
+        appendWekaResult2Csv(classifiedDataResultPath, wekaResultFileName, 'cm.csv', varargin{:}); 
     end
 end
 
