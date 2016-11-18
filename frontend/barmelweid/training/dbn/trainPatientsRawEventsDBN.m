@@ -67,8 +67,8 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
         wekaArffFileWriter = WekaArffFileWriter(dbn.features, allLabels, eventClasses, arffFileName);
         wekaArffFileWriter.run();
         
-        trainedModelFileName = [ classifiedDataResultPathAndFilenamePrefix '_DBN.model' ];
-        textResultFileName = [ classifiedDataResultPathAndFilenamePrefix '_DBN_WEKARESULT.txt' ];
+        trainedModelFileName = [ allPatientsDataFilePrefix '_DBN.model' ];
+        textResultFileName = [ allPatientsDataFilePrefix '_DBN_WEKARESULT.txt' ];
         description = ['Weka classification for sources ' strjoin(varargin, ' & ')];
         
         wekaClassifier = WekaClassifier(arffFileName, classifiedDataResultPath, trainedModelFileName, textResultFileName, 'cm.csv', description);
