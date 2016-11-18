@@ -2,7 +2,7 @@ warning ( 'off', 'all' );
 
 clear();
 
-OTUPUT_FOLDER = '2016-11-16_RAW_Zephyr';
+OTUPUT_FOLDER = '2016-11-16_RAW';
 
 % 30-sec events only !
 EVENT_CLASSES = { 'R', 'W', 'N1', 'N2', 'N3' };
@@ -29,15 +29,15 @@ disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );
 %     EVENT_CLASSES, false, true, false );
 % disp( 'Finished Extracting RAW events of MSR only.' );
 
-disp( 'Extracting RAW events of ZEPHYR only ...' );
-extractRawEventsPatientFolder(  CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
-    EVENT_CLASSES, false, false, true );
-disp( 'Finished Extracting RAW events of ZEPHYR only.' );
-% 
-% disp( 'Extracting RAW events of MSR & ZEPHYR ...' );
+% disp( 'Extracting RAW events of ZEPHYR only ...' );
 % extractRawEventsPatientFolder(  CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
-%     EVENT_CLASSES, false, true, true );
-% disp( 'Finished Extracting RAW events of MSR & ZEPHYR.' );
+%     EVENT_CLASSES, false, false, true );
+% disp( 'Finished Extracting RAW events of ZEPHYR only.' );
+% 
+disp( 'Extracting RAW events of MSR & ZEPHYR ...' );
+extractRawEventsPatientFolder(  CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...
+    EVENT_CLASSES, false, true, true );
+disp( 'Finished Extracting RAW events of MSR & ZEPHYR.' );
 
 % disp( 'Extracting RAW events of EEG only ...' );
 % extractRawEventsPatientFolder(  CONF.PATIENTS_DATA_PATH, OTUPUT_FOLDER, REQUIRED_EDF_SIGNALS, ...

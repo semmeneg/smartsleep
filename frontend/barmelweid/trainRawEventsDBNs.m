@@ -2,12 +2,12 @@ tic
 
 clear();
 
-CONF.setup();
+CONF.setupJava();
 
 disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );
  
- dataSourceSubFolder = '2016-11-12_RAW';
- dataResultSubFolder = '2016-11-16_RAW_Zephyr';
+ dataSourceSubFolder = '2016-11-16_RAW_MSR_Zephyr';
+ dataResultSubFolder = '2016-11-16_RAW_MSR_Zephyr_2';
 
  applyDBNClassifier = false;
  % dataStratificationRatios = [0.6 0.4 0.0];
@@ -20,12 +20,15 @@ disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' );
  fileNamePrefix = 'allpatients_RAWEVENTS_';
 
  % Zephyr
-[dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios, DATA_SOURCE.ZEPHYR);
-trainPatientsRawEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyDBNClassifier, applyWekaClassifier, DATA_SOURCE.ZEPHYR);
+% [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios, DATA_SOURCE.ZEPHYR);
+% trainPatientsRawEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyDBNClassifier, applyWekaClassifier, DATA_SOURCE.ZEPHYR);
 
 % MSR
 % [dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios, DATA_SOURCE.MSR);
 % trainPatientsRawEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyDBNClassifier, applyWekaClassifier, DATA_SOURCE.MSR);
+
+[dataSet, eventClasses] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios, DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
+trainPatientsRawEventsDBN(dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyDBNClassifier, applyWekaClassifier, DATA_SOURCE.MSR, DATA_SOURCE.ZEPHYR);
 
  
 % trainPatientsRawEventsDBN(testDescription, outputPath, splitByPatients, dataStratificationRatios, applyDBNClassifier, applyWekaClassifier, DATA_SOURCE.EEG);

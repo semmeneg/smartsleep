@@ -24,15 +24,17 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
 
     layers = [];
     %RBM 1
-    layerParams1.hiddenUnitsCount = 4 * size( allData, 2 );
-    layerParams1.maxEpochs = 150;
-%     layerParams1.hiddenUnitsCount = floor(size( allData, 2 ) / 4);
-%     layerParams1.maxEpochs = 50;
+%     layerParams1.hiddenUnitsCount = 4 * size( allData, 2 );
+%     layerParams1.maxEpochs = 150;
+    layerParams1.hiddenUnitsCount = floor(size( allData, 2 ) / 4);
+    layerParams1.maxEpochs = 100;
     layers = [layers layerParams1];
     
     %RBM 2
     layerParams2.hiddenUnitsCount = 4 * size( allData, 2 );
-    layerParams2.maxEpochs = 150; 
+%     layerParams2.maxEpochs = 150; 
+%     layerParams2.hiddenUnitsCount = floor(size( allData, 2 ) / 8);
+    layerParams2.maxEpochs = 100;
     layers = [layers layerParams2];
     
     params.lastLayerHiddenUnits = layerParams2.hiddenUnitsCount;
@@ -58,36 +60,48 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
     save( [ trainedDataResultPathAndFilenamePrefix '_DBN.mat' ], 'dbn' );
     fprintf('Time used for saving DBN trained model: %f seconds.\n', toc(tStart));
     
-    channelNames = cell( size(dbn.features,2), 1 );
-    
-    for i = 1 : size(dbn.features,2)
-        channelNames{ i } = sprintf( 'FEATURE_%d', i );
-    end
-    
     if(applyWekaClassifier)
         
+        % Weka input: write features and labels to ARFF file
         arffFileName = [ trainedDataResultPathAndFilenamePrefix '_DBN.arff' ];
-    
-        tStart = tic;
-        fprintf('Start saving DBN output to ARFF file for Weka: %s.\n', datetime);
-        exportGenericToWeka( dbn.features, allLabels, eventClasses, ...
-            'Barmelweid DBN on raw data', arffFileName, channelNames );
-        fprintf('Time used saving DBN output to ARFF file: %f seconds.\n', toc(tStart));
+        wekaArffFileWriter = WekaArffFileWriter(dbn.features, allLabels, eventClasses, arffFileName);
+        wekaArffFileWriter.run();
         
-        mkdir(classifiedDataResultPath);
-
-        classifiedDataResultPathAndFilenamePrefix = [ classifiedDataResultPath allPatientsDataFilePrefix ];    
-
-        tStart = tic;
-        fprintf('Start Weka classification training: %s.\n', datetime);
-        trainWEKAModel( CONF.WEKA_PATH, arffFileName, ...
-            [ trainedDataResultPathAndFilenamePrefix '_DBN.model' ], ...
-            [ classifiedDataResultPathAndFilenamePrefix '_DBN_WEKARESULT.txt' ] );
-        fprintf('Weka training time used: %f seconds.\n', toc(tStart));
+        trainedModelFileName = [ classifiedDataResultPathAndFilenamePrefix '_DBN.model' ];
+        textResultFileName = [ classifiedDataResultPathAndFilenamePrefix '_DBN_WEKARESULT.txt' ];
+        description = ['Weka classification for sources ' strjoin(varargin, ' & ')];
         
-        %appent Weka results to csv file
-        wekaResultFileName = [allPatientsDataFilePrefix '_DBN_WEKARESULT.txt' ];
-        appendWekaResult2Csv(classifiedDataResultPath, wekaResultFileName, 'cm.csv', varargin{:}); 
+        wekaClassifier = WekaClassifier(arffFileName, classifiedDataResultPath, trainedModelFileName, textResultFileName, 'cm.csv', description);
+        wekaClassifier.run();
+%         
+%         channelNames = cell( size(dbn.features,2), 1 );
+%     
+%         for i = 1 : size(dbn.features,2)
+%             channelNames{ i } = sprintf( 'FEATURE_%d', i );
+%         end
+%         
+%         arffFileName = [ trainedDataResultPathAndFilenamePrefix '_DBN.arff' ];
+%     
+%         tStart = tic;
+%         fprintf('Start saving DBN output to ARFF file for Weka: %s.\n', datetime);
+%         exportGenericToWeka( dbn.features, allLabels, eventClasses, ...
+%             'Barmelweid DBN on raw data', arffFileName, channelNames );
+%         fprintf('Time used saving DBN output to ARFF file: %f seconds.\n', toc(tStart));
+%         
+%         mkdir(classifiedDataResultPath);
+% 
+%         classifiedDataResultPathAndFilenamePrefix = [ classifiedDataResultPath allPatientsDataFilePrefix ];    
+% 
+%         tStart = tic;
+%         fprintf('Start Weka classification training: %s.\n', datetime);
+%         trainWEKAModel( CONF.WEKA_PATH, arffFileName, ...
+%             [ trainedDataResultPathAndFilenamePrefix '_DBN.model' ], ...
+%             [ classifiedDataResultPathAndFilenamePrefix '_DBN_WEKARESULT.txt' ] );
+%         fprintf('Weka training time used: %f seconds.\n', toc(tStart));
+%         
+%         appent Weka results to csv file
+%         wekaResultFileName = [allPatientsDataFilePrefix '_DBN_WEKARESULT.txt' ];
+%         appendWekaResult2Csv(classifiedDataResultPath, wekaResultFileName, 'cm.csv', varargin{:}); 
     end
 end
 

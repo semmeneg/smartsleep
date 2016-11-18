@@ -3,6 +3,8 @@ classdef CONF
     %   
     
     properties(Constant)
+        DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\';
+        
 %         PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\temp\';
 %         ALL_PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\temp\all\';
 
@@ -36,9 +38,18 @@ classdef CONF
     end
     
     methods(Static)
-        function setup()
-            setenv('JAVA_HOME','C:\Program Files\Java\jdk1.8.0_102');
-            setenv('PATH','C:\Program Files\Java\jdk1.8.0_102\bin');
+        function setupJava()
+            
+            % Set Java 
+            JAVA = 'C:\Program Files\Java\';
+            javaFolders = dir([JAVA 'jdk*']);
+            if(size(javaFolders, 1)== 0)
+                error(['No Java installation found under: ' JAVA]); 
+            end
+             [tmp ind]=sort({javaFolders.name});
+            javaFolders=javaFolders(ind);
+            setenv('JAVA_HOME', [JAVA javaFolders(end).name]);
+            setenv('PATH', [JAVA javaFolders(end).name '\bin']);
         end
 %         
 %         function outputPath = getOutputPath()

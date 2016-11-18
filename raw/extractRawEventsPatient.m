@@ -29,7 +29,7 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, outp
                 if ( isempty( combinedDataEventTimes ) )
                     combinedDataEventTimes = patient.edf.time;
                 else
-                    combinedDataEventTimes = intersect( patient.edf.includedEvents, combinedDataWindowTimes );
+                    combinedDataEventTimes = intersect( patient.edf.time, combinedDataEventTimes );
                 end              
             end                       
 
@@ -57,7 +57,7 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, outp
                 if ( isempty( combinedDataEventTimes ) )
                     combinedDataEventTimes = patient.msr.time;
                 else
-                    combinedDataEventTimes = intersect( patient.msr.includedEvents, combinedDataWindowTimes );
+                    combinedDataEventTimes = intersect( patient.msr.time, combinedDataEventTimes );
                 end              
             end              
             
@@ -83,7 +83,7 @@ function [ patient ] = extractRawEventsPatient( patientPath, patientFolder, outp
                 if ( isempty( combinedDataEventTimes ) )
                     combinedDataEventTimes = patient.zephyr.time;
                 else
-                    combinedDataEventTimes = intersect( patient.zephyr.includedEvents, combinedDataWindowTimes );
+                    combinedDataEventTimes = intersect( patient.zephyr.time, combinedDataEventTimes );
                 end              
             end            
 
