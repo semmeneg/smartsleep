@@ -16,14 +16,16 @@ classdef RBMFeaturesTrainer
         % Constructor
         %
         % param layersConfig is expected to be an array of hiddenLayer configurations (structs with 'hiddenUnitsCount', 'maxEpochs')
-        % param rawData is a struct with 'time', 'data', 'channelNames' (optional)
+        % param rawData is a struct with 'labels', 'data', 'channelNames' (optional)
         function obj = RBMFeaturesTrainer(layersConfig, rawData)
             obj.layersConfig = layersConfig;
             obj.rawData = rawData;
         end
         
-        % Returns a struct of features with
-        function [ features ] = run(obj)
+        % Returns a features struct with data and labels
+        function [ resultSet ] = run(obj)
+            
+            resultSet = struct('features', [], 'labels', obj.rawData.labels);
             
             dataSet = DataClasses.DataStore();
             dataSet.valueType = ValueType.gaussian;
@@ -47,7 +49,7 @@ classdef RBMFeaturesTrainer
             dbn.train( dataSet );
             fprintf('DBN train time used: %f seconds.\n', toc(tStart));
             
-            features = dbn.getFeature( obj.rawData.data );
+            resultSet.features = dbn.getFeature( obj.rawData.data );
             
         end
     end

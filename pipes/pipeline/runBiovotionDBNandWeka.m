@@ -5,7 +5,7 @@ clear();
 
 LOG = Logger.getLogger('Biovotion DBN');
 
-subFolder = '2016-11-28_Biovotion_DBN_Features_Weka_Classified';
+subFolder = '2016-11-28_Biovotion_DBN_Features_L1x0.25_L2x0.125_Weka_Classified';
 
 selectedRawDataChannels = { 'Value05','Value06','Value07','Value08','Value09','Value10','Value11' };
 
@@ -18,8 +18,8 @@ selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
 aggregationFunctions = { @energyFeature, @meanFeature, @rootMeanSquareFeature, ...
     @skewnessFeature, @stdFeature, @sumFeature, @vecNormFeature };
 
-allPatientsPath = [CONF.PATIENTS_DATA_PATH 'October2November2016Patients\' ];
-% allPatientsPath = [CONF.PATIENTS_DATA_PATH 'Temp\' ];
+% allPatientsPath = [CONF.PATIENTS_DATA_PATH 'October2November2016Patients\' ];
+allPatientsPath = [CONF.PATIENTS_DATA_PATH 'Temp\' ];
 
 files = dir( [ allPatientsPath 'P*' ] );
 dirFlags = [ files.isdir ];
@@ -71,11 +71,21 @@ for i = 1 : patientCount
     
 end
 
+%6. Run DBN (RBM)
+dbnInputData.data = allData;
+dbnInputData.labels = allLabels;
+
+inputComponents = floor(size( allData, 2 ));
+layersConfig =[struct('hiddenUnitsCount', floor(inputComponents / 4), 'maxEpochs', 50);struct('hiddenUnitsCount', floor(inputComponents / 8), 'maxEpochs', 50)];
+
+rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData);
+higherOrderFeaturesDBN = rbmTrainer.run();
+
 %6. write ARFF file
-combinedPatientsPath = [allPatientsPath 'all\' ]
+combinedPatientsPath = [allPatientsPath 'all\' ];
 [s, mess, messid] = mkdir([ combinedPatientsPath CONF.PREPROCESSED_DATA_SUBFOLDER '\' subFolder]);
 arffFileName = [ combinedPatientsPath CONF.PREPROCESSED_DATA_SUBFOLDER '\'  subFolder '\allpatients_EVENTS_Biovotion.arff'];
-writer = WekaArffFileWriter(allData, allLabels, selectedClasses, arffFileName);
+writer = WekaArffFileWriter(higherOrderFeaturesDBN.features, higherOrderFeaturesDBN.labels, selectedClasses, arffFileName);
 writer.run();
 
 %7. run Weka classifier
