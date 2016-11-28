@@ -1,4 +1,4 @@
-function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, eventClasses, dataStratificationRatios, applyDBNClassifier, applyWekaClassifier, varargin )
+function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, eventClasses, applyDBNClassifier, applyWekaClassifier, useSplitForWeka, varargin )
 %trainPatientsRawEventsDBN load raw data mat file with data, features and labels of each patient
 %   Set parameters like stratisfaction (training, validation and test
 %   data), DBN layer count and units, 
@@ -10,13 +10,8 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
 
     allPatientsDataFilePrefix = ['allpatients_RAWEVENTS_' strjoin(varargin, '_') ];
     
-    if ( sum( [ dataStratificationRatios(1) dataStratificationRatios(2) dataStratificationRatios(3)] ) ~= 1.0 )
-        allData = [dataSet.trainData; dataSet.validationData; dataSet.testData ];
-        allLabels = [dataSet.trainLabels; dataSet.validationLabels; dataSet.testLabels ];
-    else
-        allData = dataSet.trainData;
-        allLabels = dataSet.trainLabels;
-    end
+    allData = [dataSet.trainData; dataSet.validationData; dataSet.testData ];
+    allLabels = [dataSet.trainLabels; dataSet.validationLabels; dataSet.testLabels ];
     
     params.extractFeatures = true;
     params.normalize = false;   % NOTE: MUST NOT do normalizing, would lead to catastrophic classification using feature-vectors due to min-max
@@ -24,22 +19,26 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
 
     layers = [];
     %RBM 1
-%     layerParams1.hiddenUnitsCount = 4 * size( allData, 2 );
-%     layerParams1.maxEpochs = 150;
-    layerParams1.hiddenUnitsCount = floor(size( allData, 2 ) / 4);
-    layerParams1.maxEpochs = 100;
+    layerParams1.hiddenUnitsCount = size( allData, 2 );
+%     layerParams1.hiddenUnitsCount = floor(size( allData, 2 ) / 4);
+    layerParams1.maxEpochs = 50;
     layers = [layers layerParams1];
     
     %RBM 2
-    layerParams2.hiddenUnitsCount = 4 * size( allData, 2 );
-%     layerParams2.maxEpochs = 150; 
-%     layerParams2.hiddenUnitsCount = floor(size( allData, 2 ) / 8);
-    layerParams2.maxEpochs = 100;
+    layerParams2.hiddenUnitsCount =  floor(size( allData, 2 ) / 2);
+    layerParams2.maxEpochs = 50;
     layers = [layers layerParams2];
+    
+    %RBM 3
+%     layerParams3.hiddenUnitsCount = 2 * size( allData, 2 );
+%     layerParams3.maxEpochs = 100;
+%     layers = [layers layerParams3];    
     
     params.lastLayerHiddenUnits = layerParams2.hiddenUnitsCount;
     
     [ dbn ] = genericDBNTrain( dataSet, params, layers, applyDBNClassifier );
+    
+    
     
     dbn.features = dbn.net.getFeature( allData );
     
@@ -63,15 +62,30 @@ function [ dbn ] = trainPatientsRawEventsDBN( dataResultSubFolder, dataSet, even
     if(applyWekaClassifier)
         
         % Weka input: write features and labels to ARFF file
+        if(useSplitForWeka)
+            features = dbn.net.getFeature(dataSet.trainData);
+            labels = dataSet.trainLabels;
+            
+            validationFeatures = dbn.net.getFeature(dataSet.validationData);
+            validationLabels = dataSet.validationLabels;
+            validationArffFileName = [ trainedDataResultPathAndFilenamePrefix '_validation_DBN.arff' ];
+            wekaArffFileWriter = WekaArffFileWriter(validationFeatures, validationLabels, eventClasses, validationArffFileName);
+            wekaArffFileWriter.run();
+        else
+            features = dbn.net.getFeature(allData);
+            labels = allLabels;
+            validationArffFileName = [];
+        end
+            
         arffFileName = [ trainedDataResultPathAndFilenamePrefix '_DBN.arff' ];
-        wekaArffFileWriter = WekaArffFileWriter(dbn.features, allLabels, eventClasses, arffFileName);
+        wekaArffFileWriter = WekaArffFileWriter(features, labels, eventClasses, arffFileName);
         wekaArffFileWriter.run();
         
         trainedModelFileName = [ allPatientsDataFilePrefix '_DBN.model' ];
         textResultFileName = [ allPatientsDataFilePrefix '_DBN_WEKARESULT.txt' ];
         description = ['Weka classification for sources ' strjoin(varargin, ' & ')];
         
-        wekaClassifier = WekaClassifier(arffFileName, classifiedDataResultPath, trainedModelFileName, textResultFileName, 'cm.csv', description);
+        wekaClassifier = WekaClassifier(arffFileName, validationArffFileName, classifiedDataResultPath, trainedModelFileName, textResultFileName, 'cm.csv', description);
         wekaClassifier.run();
 %         
 %         channelNames = cell( size(dbn.features,2), 1 );

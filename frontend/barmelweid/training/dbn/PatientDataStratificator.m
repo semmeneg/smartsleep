@@ -13,18 +13,14 @@ classdef PatientDataStratificator
     end
     
     methods
-        function obj = PatientDataStratificator(allPatientData, dataStratificationRatios)
+        function obj = PatientDataStratificator(allPatientData, dataSplit)
             
-            train = dataStratificationRatios(1);
-            validate = dataStratificationRatios(2);
-            test = dataStratificationRatios(3);
-            
-            if ( (train > 1.0) || (validate > 1.0) || (test > 1.0) )
-                error( 'Stratification ratios for training, validation or test cannot not be > 1.0 (100%)' );
-            end
+            train = dataSplit(1);
+            validate = dataSplit(2);
+            test = dataSplit(3);
             
             if ( sum( [ train validate test] ) ~= 1.0 )
-                disp( fprintf('Attention! Data split will overlab (sum > 100%): Training = %.0f%% Validation = %.0f%% Testing = %.0f%%', train*100, validate*100, test*100) );
+                error( fprintf('Attention! Data split ratios do not sum up to 1.0 resp. 100 % Training = %.0f%% Validation = %.0f%% Testing = %.0f%%', train*100, validate*100, test*100) );
             end
             
             patientsCount = length( allPatientData );
@@ -37,39 +33,27 @@ classdef PatientDataStratificator
             if( sum( [trainSamplesCount validationSamplesCount testSamplesCount] ) <  patientsCount)
                 trainSamplesCount = trainSamplesCount + 1 ;
             end
-
+            
             %trainings data
-            for p = [allPatientData{1:trainSamplesCount}]
-                obj.trainData = [ obj.trainData; p.combinedData ];
-                obj.trainLabels = [ obj.trainLabels; p.combinedLabels ];
-            end 
-            
+            [obj.trainData, obj.trainLabels] = split(allPatientData, 1, trainSamplesCount);
             %validation data
-            if( (trainSamplesCount + validationSamplesCount) > patientsCount) % with overlap 
-                validationStartIndex = patientsCount - validationSamplesCount + 1;
-                validationEndIndex = patientsCount;
-            else % without overlap
-                validationStartIndex = trainSamplesCount + 1;
-                validationEndIndex = trainSamplesCount+validationSamplesCount;
-            end
-            for p = [allPatientData{validationStartIndex:validationEndIndex}]
-                obj.validationData = [ obj.validationData; p.combinedData ];
-                obj.validationLabels = [ obj.validationLabels; p.combinedLabels ];
-            end 
-            
+            [obj.validationData, obj.validationLabels] = split(allPatientData, trainSamplesCount + 1, trainSamplesCount+validationSamplesCount);
             %test data
-            if( (trainSamplesCount + validationSamplesCount + testSamplesCount) > patientsCount) % with overlap 
-                testStartIndex = patientsCount - testSamplesCount + 1;
-                testEndIndex = patientsCount;
-            else % without overlap
-                testStartIndex = validationStartIndex + 1;
-                testEndIndex = validationEndIndex+testSamplesCount;
+            [obj.testData, obj.testLabels] = split(allPatientData, trainSamplesCount+validationSamplesCount + 1, trainSamplesCount+validationSamplesCount+testSamplesCount);
+            
+            fprintf('data instances split based on patients split:\n\t training(%0.2f): %d\n\tvalidation(%0.2f): %d\n\ttest(%0.2f): %d\n', train, length(obj.trainLabels), validate, length(obj.validationLabels), test, length(obj.testLabels));  
+            
+            function [data, labels] = split(allPatientData, startIdx, endIdx)
+                data = [];
+                labels = [];
+                if (endIdx > startIdx && endIdx <= length(allPatientData))
+                    for personData = [allPatientData{startIdx:endIdx}]
+                        data = [ data; personData.combinedData ];
+                        labels = [ labels; personData.combinedLabels ];
+                    end
+                end
             end
-            for p = [allPatientData{testStartIndex:testEndIndex}]
-                obj.testData = [ obj.testData; p.combinedData ];
-                obj.testLabels = [ obj.testLabels; p.combinedLabels ];            
-            end 
         end
     end
- end
+end
 

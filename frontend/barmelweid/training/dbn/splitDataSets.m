@@ -1,7 +1,11 @@
-function [ dataSet, eventClasses ] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataStratificationRatios, varargin )
+function [ dataSet, eventClasses ] = splitDataSets(dataSourceSubFolder, fileNamePrefix, splitByPatients, dataSplit, varargin )
 %splitDataSets Creates a data set instance
 %(DataClasses.DataStore()), splits the data into training and validation
 %data and finally filters handrafted features and channels if defined.
+
+    if ( sum( [ dataSplit(1) dataSplit(2) dataSplit(3)] ) ~= 1.0 )
+        error('Data split ratio (training,validation,... must sum up to 1.0');
+    end
 
     load( [ CONF.ALL_PATIENTS_PREPROCESSED_DATA_PATH dataSourceSubFolder '\' fileNamePrefix strjoin(varargin, '_') '.mat' ] );
 
@@ -12,7 +16,7 @@ function [ dataSet, eventClasses ] = splitDataSets(dataSourceSubFolder, fileName
     end
         
     if(splitByPatients)
-        dataStratificator = PatientDataStratificator(allPatients, dataStratificationRatios);
+        dataStratificator = PatientDataStratificator(allPatients, dataSplit);
     else %split over all events
         allData = [];
         allLabels = [];
@@ -24,7 +28,7 @@ function [ dataSet, eventClasses ] = splitDataSets(dataSourceSubFolder, fileName
             end;
         end    
         
-        dataStratificator = AllDataStratificator(allLabels, allData, dataStratificationRatios, false, false);       
+        dataStratificator = AllDataStratificator(allLabels, allData, dataSplit, false, false);       
     end
        
     dataSet = DataClasses.DataStore();

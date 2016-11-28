@@ -6,6 +6,11 @@ classdef TimeUtils
     
     methods(Static)
         
+        function [ unixTime ] = matlabTimeToUnixTime(obj, matlabTime )
+            unix_epoch = datenum(1970,1,1,0,0,0);
+            unixTime = matlabTime * 86400 - unix_epoch * 86400;
+        end
+        
         % Returns the next time after the given timestamp with the
         % same second part as defined by 'startSeconds'.
         function [ synchronizedTime ] = getNextTimeWithSameSeconds(time, startSeconds)

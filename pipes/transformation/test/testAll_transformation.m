@@ -1,4 +1,4 @@
-function [result] = testAll_classifier( )
+function [result] = testAll_transformation( )
     folder = strrep(mfilename('fullpath'), mfilename() , ''); % gets current folder
     folderSuite  = matlab.unittest.TestSuite.fromFolder(folder);
     if(isempty(folderSuite))

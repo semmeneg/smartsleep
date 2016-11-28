@@ -2,10 +2,8 @@
 %
 classdef WekaClassifier
     properties
-        features = [];
-        labels = [];
-        classes = [];
-        arffInputFile = [];
+        arffFile = [];
+        arffValidationFile = [];
         resultFolderPath = [];
         trainedModelFileName = [];
         textResultFileName = [];
@@ -15,8 +13,11 @@ classdef WekaClassifier
     
     methods
         %% Construct and initialize classifier.
-        function obj = WekaClassifier(arffInputFile, resultFolderPath, trainedModelFileName, textResultFileName, csvResultFileName, description)
-            obj.arffInputFile = arffInputFile;
+        %
+        % optional parameter: arffValidationFile (if not set, 10foldCross validation is applied)
+        function obj = WekaClassifier(arffFile, arffValidationFile, resultFolderPath, trainedModelFileName, textResultFileName, csvResultFileName, description)
+            obj.arffFile = arffFile;
+            obj.arffValidationFile = arffValidationFile;
             obj.resultFolderPath = resultFolderPath;
             obj.trainedModelFileName = trainedModelFileName;
             obj.textResultFileName = textResultFileName;
@@ -32,16 +33,22 @@ classdef WekaClassifier
             [status,message,messageid] = mkdir(obj.resultFolderPath);
             
             % Weka output: trained modelfile
-            modelFile = [obj.resultFolderPath obj.trainedModelFileName];
+            modelFile = [obj.resultFolderPath '\'  obj.trainedModelFileName];
             
-            textResultsFile = [obj.resultFolderPath obj.textResultFileName];
+            textResultsFile = [obj.resultFolderPath '\'  obj.textResultFileName];
             
             tStart = tic;
             fprintf('Start Weka classification training: %s.\n', datetime);
             oldFolder = cd( CONF.WEKA_PATH );
+            if(isempty(obj.arffValidationFile)) %use default 10foldCross validation
             cmd = [ 'java -Xmx6144m -cp weka.jar weka.classifiers.trees.RandomForest' ...
-                ' -t "' obj.arffInputFile '"'...
+                ' -t "' obj.arffFile '"'...
                 ' -d "' modelFile  '"' ];
+            else
+                % TODO !!!!!! call Weka with training (arffFile) and
+                % validation file (arffValidationFile)
+            end
+            
             
             [ status, cmdout ] = system( cmd );
             

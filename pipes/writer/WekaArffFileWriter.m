@@ -25,10 +25,10 @@ classdef WekaArffFileWriter
             end
             
             tStart = tic;
-            fprintf('Start saving DBN output to ARFF file for Weka: %s.\n', datetime);
+            fprintf('Start saving features and labels to ARFF file for Weka: %s.\n', datetime);
             obj.exportGenericToWeka( obj.features, obj.labels, obj.classes, ...
-                ['DBN on raw data'], obj.arffFileName, channelNames );
-            fprintf('Time used saving DBN output to ARFF file: %f seconds.\n', toc(tStart));
+                'DBN on raw data', obj.arffFileName, channelNames );
+            fprintf('Time used creating ARFF file: %f seconds.\n', toc(tStart));
         end
         
         function [ ] = exportGenericToWeka( obj, data, labels, classes, name, arffFileName, channelNames )
