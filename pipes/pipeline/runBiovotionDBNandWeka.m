@@ -3,6 +3,8 @@
 tic
 clear();
 
+LOG = Logger.getLogger('Biovotion DBN');
+
 subFolder = '2016-11-28_Biovotion_DBN_Features_Weka_Classified';
 
 selectedRawDataChannels = { 'Value05','Value06','Value07','Value08','Value09','Value10','Value11' };
@@ -40,6 +42,7 @@ for i = 1 : patientCount
     labeledEvents = sleepPhaseParser.run();
     
     % 2. parse raw data
+    LOG.logStart('Parse raw data');
     csvFile = [allPatientsPath patienFolderName '\1_raw\Biovotion\*.txt' ];
     rawDataReader = BiovotionCsvReader(csvFile, selectedRawDataChannels);
     rawData = rawDataReader.run();
@@ -48,14 +51,19 @@ for i = 1 : patientCount
         continue;
     end
     rawData.channelNames = selectedRawDataChannels;
+    LOG.logEnd('Parse raw data');
     
     % 3. linear interpolate/decimate values to fit target sampling frequency
+    LOG.logStart('Interpolation');
     interpolator = SamplingRateInterpolationAndDecimation(samplingFrequency, rawData);
     interpolatedRawData = interpolator.run();
+    LOG.logEnd('Interpolation');
     
     %4. merge label and events
+    LOG.logStart('Merge labels and events');
     merger = DefaultRawDataAndLabelMerger(samplingFrequency, labeledEvents, interpolatedRawData, mandatoryChannelsName, selectedClasses, assumedEventDuration);
     [ data, time, labels, channelNames ] = merger.run();
+    LOG.logEnd('Merge labels and events');
     
     %5. combine features and labels of all patients
     allData = [allData ; data];
