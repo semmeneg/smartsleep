@@ -51,15 +51,17 @@ classdef BiovotionCsvReader
             t = readtable( obj.fileNameAndPath, 'delimiter', ',', 'headerlines', 1, 'readvariablenames', false);
             t.Properties.VariableNames = vars(1:size(t,2));
             
-            tableSize = size( t, 1 );
+            filteredByTypeIdx = ismember(table2array(t( :, 'Type' )), obj.filterTypeNumber); 
+            
             time = t( :, 'Timestamp' );
-            timeStrs = table2cell( time );
+            timeStrs = table2cell( time(filteredByTypeIdx,:));
             
             data.data = table2array( t( :, obj.selectedChannels ) );
-%             data.data = str2double(data.data);
-            data.time = zeros( tableSize, 1 );
+            data.data = data.data(filteredByTypeIdx,:);
             
-            for i = 1 : tableSize
+            data.time = zeros( length(timeStrs), 1 );
+            
+            for i = 1 : length(timeStrs)
                 data.time( i ) = obj.matlabTimeToUnixTime( datenum( timeStrs{ i }, obj.TIMEFORMAT ) );
             end
         end

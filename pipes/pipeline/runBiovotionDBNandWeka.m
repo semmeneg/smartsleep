@@ -7,6 +7,9 @@ LOG = Logger.getLogger('Biovotion DBN');
 
 subFolder = '2016-11-28_Biovotion_DBN_Features_L1x0.25_L2x0.125_Weka_Classified';
 
+allPatientsPath = [CONF.PATIENTS_DATA_PATH 'October2November2016Patients\' ];
+% allPatientsPath = [CONF.PATIENTS_DATA_PATH 'Temp\' ];
+
 selectedRawDataChannels = { 'Value05','Value06','Value07','Value08','Value09','Value10','Value11' };
 
 samplingFrequency = 51; % Hz
@@ -17,9 +20,6 @@ selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
 
 aggregationFunctions = { @energyFeature, @meanFeature, @rootMeanSquareFeature, ...
     @skewnessFeature, @stdFeature, @sumFeature, @vecNormFeature };
-
-% allPatientsPath = [CONF.PATIENTS_DATA_PATH 'October2November2016Patients\' ];
-allPatientsPath = [CONF.PATIENTS_DATA_PATH 'Temp\' ];
 
 files = dir( [ allPatientsPath 'P*' ] );
 dirFlags = [ files.isdir ];
@@ -44,7 +44,7 @@ for i = 1 : patientCount
     % 2. parse raw data
     LOG.logStart('Parse raw data');
     csvFile = [allPatientsPath patienFolderName '\1_raw\Biovotion\*.txt' ];
-    rawDataReader = BiovotionCsvReader(csvFile, selectedRawDataChannels);
+    rawDataReader = BiovotionCsvReader(csvFile, selectedRawDataChannels, 11);
     rawData = rawDataReader.run();
     if(isempty(rawData))
         disp('No data found for person.');
@@ -75,20 +75,22 @@ end
 dbnInputData.data = allData;
 dbnInputData.labels = allLabels;
 
+dbnInputData.data(isnan(dbnInputData.data)) = 0;
+
 inputComponents = floor(size( allData, 2 ));
-layersConfig =[struct('hiddenUnitsCount', floor(inputComponents / 4), 'maxEpochs', 50);struct('hiddenUnitsCount', floor(inputComponents / 8), 'maxEpochs', 50)];
+layersConfig =[struct('hiddenUnitsCount', floor(inputComponents / 4), 'maxEpochs', 1);struct('hiddenUnitsCount', floor(inputComponents / 8), 'maxEpochs', 1)];
 
 rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData);
 higherOrderFeaturesDBN = rbmTrainer.run();
 
-%6. write ARFF file
+%7. write ARFF file
 combinedPatientsPath = [allPatientsPath 'all\' ];
 [s, mess, messid] = mkdir([ combinedPatientsPath CONF.PREPROCESSED_DATA_SUBFOLDER '\' subFolder]);
 arffFileName = [ combinedPatientsPath CONF.PREPROCESSED_DATA_SUBFOLDER '\'  subFolder '\allpatients_EVENTS_Biovotion.arff'];
 writer = WekaArffFileWriter(higherOrderFeaturesDBN.features, higherOrderFeaturesDBN.labels, selectedClasses, arffFileName);
 writer.run();
 
-%7. run Weka classifier
+%8. run Weka classifier
 resultFolderPath = [ combinedPatientsPath CONF.CLASSIFIED_DATA_SUBFOLDER '\'  subFolder];
 trainedModelFileName = 'allpatients_Biovotion_FEATURES_WEKARESULT.model';
 textResultFileName = 'allpatients_Biovotion_FEATURES_WEKARESULT.txt';
