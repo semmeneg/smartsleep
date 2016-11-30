@@ -32,6 +32,8 @@ classdef RBMFeaturesTrainer
             dataSet.trainData = obj.rawData.data;
             dataSet.trainLabels = obj.rawData.labels;
             
+            dataSet.shuffle();
+                        
             dbn = DBN( 'classifier' );
             
             for layerIdx = 1 : length(obj.layersConfig)

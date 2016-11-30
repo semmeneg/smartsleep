@@ -5,27 +5,19 @@ classdef CONF
     properties(Constant)
         DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\';
         
-%         PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\temp\';
-%         ALL_PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\temp\all\';
-
         PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\';
         ALL_PATIENTS_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\all\';
 
-%         PATIENTS_DATA_PATH = '\\VBOXSVR\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\';
-%         ALL_PATIENTS_DATA_PATH = '\\VBOXSVR\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\all\';
-        
         WEKA_PATH = 'C:\Program Files\Weka-3-8';
                 
         RAW_DATA_SUBFOLDER = '1_raw';
         PREPROCESSED_DATA_SUBFOLDER = '2_preprocessed';
-        TRAINED_DATA_SUBFOLDER = '3_trained';
-        CLASSIFIED_DATA_SUBFOLDER = '4_classified';
+        DBN_DATA_SUBFOLDER = '3_dbn';
+        WEKA_DATA_SUBFOLDER = '4_weka';
         
         ALL_PATIENTS_PREPROCESSED_DATA_PATH = [ CONF.ALL_PATIENTS_DATA_PATH CONF.PREPROCESSED_DATA_SUBFOLDER '\' ];
-        ALL_PATIENTS_TRAINED_DATA_PATH = [ CONF.ALL_PATIENTS_DATA_PATH CONF.TRAINED_DATA_SUBFOLDER '\' ];
-        ALL_PATIENTS_TRAINED_DNB_DATA_PATH = [ CONF.ALL_PATIENTS_DATA_PATH CONF.TRAINED_DATA_SUBFOLDER '\DBN\' ];
-        ALL_PATIENTS_CLASSIFIED_DATA_PATH = [ CONF.ALL_PATIENTS_DATA_PATH CONF.CLASSIFIED_DATA_SUBFOLDER '\' ];
-        ALL_PATIENTS_CLASSIFIED_WEKA_DATA_PATH = [ CONF.ALL_PATIENTS_DATA_PATH CONF.CLASSIFIED_DATA_SUBFOLDER '\Weka\' ];
+        ALL_PATIENTS_DBN_DATA_PATH = [ CONF.ALL_PATIENTS_DATA_PATH CONF.DBN_DATA_SUBFOLDER '\' ];
+        ALL_PATIENTS_WEKA_DATA_PATH = [ CONF.ALL_PATIENTS_DATA_PATH CONF.WEKA_DATA_SUBFOLDER '\' ];
         
         %data sources and combinations
         EEG = 'EEG';
@@ -51,11 +43,7 @@ classdef CONF
             setenv('JAVA_HOME', [JAVA javaFolders(end).name]);
             setenv('PATH', [JAVA javaFolders(end).name '\bin']);
         end
-%         
-%         function outputPath = getOutputPath()
-%             outputPath = [ CONF.ALL_PATIENTS_DATA_PATH 'results\DBN' ];
-%         end
-%         
+        
         function outputPath = getOutputPathWithTimestamp()
             outputPath = [ CONF.getOutputPath() '\' datestr(now,'yyyy-mm-dd_HH-MM-SS')];
         end
