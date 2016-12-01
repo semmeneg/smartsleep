@@ -39,7 +39,7 @@ for i = 1 : patientCount
     
     % 2. parse raw data
     csvFile = [allPatientsPath patienFolderName '\1_raw\Biovotion\*.txt' ];
-    rawDataReader = BiovotionCsvReader(csvFile, selectedRawDataChannels);
+    rawDataReader = BiovotionCsvReader(csvFile, selectedRawDataChannels, 11);
     rawData = rawDataReader.run();
     if(isempty(rawData))
         disp('No data found for person.');
@@ -57,17 +57,19 @@ for i = 1 : patientCount
     
 end
 
+allData(isnan(allData)) = 0;
+
 %5 write ARFF file
 combinedPatientsPath = [allPatientsPath 'all\' ]
 [s, mess, messid] = mkdir([ combinedPatientsPath CONF.PREPROCESSED_DATA_SUBFOLDER '\' subFolder]);
-arffFileName = [ combinedPatientsPath CONF.PREPROCESSED_DATA_SUBFOLDER '\'  subFolder '\allpatients_EVENTS_Biovotion.arff'];
+arffFileName = [ combinedPatientsPath CONF.PREPROCESSED_DATA_SUBFOLDER '\'  subFolder '\raw_features__Biovotion.arff'];
 writer = WekaArffFileWriter(allData, allLabels, selectedClasses, arffFileName);
 writer.run();
 
 %6 run Weka classifier
-resultFolderPath = [ combinedPatientsPath CONF.CLASSIFIED_DATA_SUBFOLDER '\'  subFolder];
-trainedModelFileName = 'allpatients_Biovotion_FEATURES_WEKARESULT.model';
-textResultFileName = 'allpatients_Biovotion_FEATURES_WEKARESULT.txt';
+resultFolderPath = [ combinedPatientsPath CONF.WEKA_DATA_SUBFOLDER '\'  subFolder];
+trainedModelFileName = 'weka_out__Biovotion.model';
+textResultFileName = 'weka_out_confusion_matrix__Biovotion.txt';
 csvResultFileName = 'cm.csv';
 classifier = WekaClassifier(arffFileName, [], resultFolderPath, trainedModelFileName, textResultFileName, csvResultFileName, 'test pipeline');
 classifier.run();

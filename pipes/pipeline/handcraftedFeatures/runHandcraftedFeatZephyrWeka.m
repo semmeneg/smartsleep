@@ -34,13 +34,7 @@ for i = 1 : patientCount
     labeledEventsFile = [CONF.PATIENTS_DATA_PATH patienFolderName '\1_raw\*.txt' ];
     sleepPhaseParser = SleepPhaseEventParser(labeledEventsFile);
     labeledEvents = sleepPhaseParser.run();
-    
-    % Can be removed when wrong placed file in Patient26 folder is moved 
-    if(isempty(labeledEvents))
-        disp('No labels found for person.');
-        continue;
-    end
-    
+
     % 2. parse raw data
     csvFile = [CONF.PATIENTS_DATA_PATH patienFolderName '\1_raw\Zephyr\*_Summary.csv' ];
     zephyrReader = ZephyrCsvReader(csvFile, selectedRawDataChannels);
