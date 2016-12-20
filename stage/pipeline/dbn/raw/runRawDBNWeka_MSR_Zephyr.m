@@ -144,12 +144,15 @@ sensors{2} = struct('time', allTime, 'labels', allLabels, 'data', allData);
 sensorDataMerger = TimedDataIntersection(sensors);
 [allTime, allLabels, allData ] = sensorDataMerger.run();
 
+resultFolder = [ p.BASE_PATH '\processed\' CONF.WEKA_DATA_SUBFOLDER '\'  p.processingOutputFolder];
+[s, mess, messid] = mkdir(resultFolder);
+
 % Run DBN (RBM)
 dbnInputData.data = allData;
 dbnInputData.labels = allLabels;
 
 inputComponents = floor(size( allData, 2 ));
-SETUP_LOG = SetupLog([p.BASE_PATH 'setup.log']);
+SETUP_LOG = SetupLog([resultFolder '\setup.log']);
 SETUP_LOG.log('MSR & Zephyr');
 SETUP_LOG.log('Pipeline: Rawdata > DBN > Weka(RandomForest,10foldCross)');
 SETUP_LOG.log(sprintf('%s %d', 'Rawdata components:', inputComponents));
@@ -168,11 +171,8 @@ dbnLearnedModelFile = [dbnLearnedModelFolder '\dbn_trainedModel_' dataSource '.m
 dbn = rbmTrainer.getDBN();
 save(dbnLearnedModelFile, 'dbn');
 
-wekaFolder = [ p.BASE_PATH '\processed\' CONF.WEKA_DATA_SUBFOLDER '\'  p.processingOutputFolder];
-[s, mess, messid] = mkdir(wekaFolder);
-
 % write ARFF files
-arffFileName = [ wekaFolder '\handcrafted_features__' dataSource '.arff'];
+arffFileName = [ resultFolder '\handcrafted_features__' dataSource '.arff'];
 writer = WekaArffFileWriter(allData, allLabels, p.selectedClasses, arffFileName);
 writer.run();
 
@@ -180,7 +180,7 @@ writer.run();
 trainedModelFileName = ['weka_out__' dataSource '.model'];
 textResultFileName = ['weka_out_confusion_matrix__' dataSource '.txt'];
 csvResultFileName = 'cm.csv';
-classifier = WekaClassifier(arffFileName, [], wekaFolder, trainedModelFileName, textResultFileName, csvResultFileName, dataSource);
+classifier = WekaClassifier(arffFileName, [], resultFolder, trainedModelFileName, textResultFileName, csvResultFileName, dataSource);
 classifier.run();
 
 toc
