@@ -13,6 +13,8 @@ classdef TimedDataIntersection
         
         function [time, labels, data] = run(obj)
             
+            Log.getLogger().infoStart(class(obj), 'run');
+            
             % get times intersection first
             time = obj.dataSets{1}.time;
             for dataSetsIdx = 2 : length(obj.dataSets)
@@ -28,6 +30,8 @@ classdef TimedDataIntersection
                 idx = find(ismember(obj.dataSets{dataSetsIdx}.time, time));
                 data = [data obj.dataSets{dataSetsIdx}.data( idx, : ) ];
             end
+            
+            Log.getLogger().infoEnd(class(obj), 'run');
         end
     end
     

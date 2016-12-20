@@ -210,7 +210,7 @@ classdef log4m < handle
 
 %% Private Methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   Unless you're modifying this, these should be of little concern to you.
-    methods (Access = private)
+    methods (Access = protected)
         
         function self = log4m(fullpath_passed)
             

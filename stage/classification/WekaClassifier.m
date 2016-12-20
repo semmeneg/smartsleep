@@ -29,6 +29,8 @@ classdef WekaClassifier
         %% Run the pipe
         function run(obj)
             
+            Log.getLogger().infoStart(class(obj), 'run');
+            
             % create directory for result files
             [status,message,messageid] = mkdir(obj.resultFolderPath);
             
@@ -65,6 +67,7 @@ classdef WekaClassifier
                 obj.appendWekaResult2Csv(textResultsFile, csvFile, obj.description);
             end
             
+            Log.getLogger().infoEnd(class(obj), 'run');
             
         end
 

@@ -34,6 +34,8 @@ classdef (Abstract) AbstractDataAndLabelMerger < Stage
         % data vector for each event.
         function [ data, time, labels, channelNames ] = run(obj)
             
+            Log.getLogger().infoStart(class(obj), 'run');
+            
             channelNames = obj.rawData.channelNames;
             eventCount = length( obj.labeledEvents.time );
             
@@ -90,6 +92,8 @@ classdef (Abstract) AbstractDataAndLabelMerger < Stage
             data( ~any(data,2), : ) = [];
             time( ~any(time,2), : ) = [];
             labels( ~any(labels,2), : ) = [];
+            
+            Log.getLogger().infoEnd(class(obj), 'run');
         end
         
         function validateInput(obj)

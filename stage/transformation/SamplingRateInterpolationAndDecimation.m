@@ -20,6 +20,8 @@ classdef SamplingRateInterpolationAndDecimation
         
         function [ transformedRawData ] = run(obj)
             
+            Log.getLogger().infoStart(class(obj), 'run');
+            
             transformedRawData = [];
             transformedRawData.data = [];
             transformedRawData.time = [];
@@ -60,6 +62,7 @@ classdef SamplingRateInterpolationAndDecimation
                 transformedRawData.time = [ transformedRawData.time ; ones(obj.targetSamplingFrequency,1)*timestamp ];
                 transformedRawData.data = [transformedRawData.data ; interpolatedDataBlock];
             end
+            Log.getLogger().infoEnd(class(obj), 'run');
         end
     end
     

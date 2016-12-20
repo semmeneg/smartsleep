@@ -1,11 +1,2 @@
-datestr(unixTimeToMatlabTime(1455144247))
-datestr(unixTimeToMatlabTime(1455144173))
-
-
-eventStartTime  = 1455144175;
-eventEndTime    = 1455144176;
-
-[1455144174.40701;1455144175.40700;1455144176.40701;1455144177.40700;1455144178.40701;1455144179.40700;1455144180.40701;1455144181.40700;1455144182.40700;1455144183.40700]
-
-datestr(unixTimeToMatlabTime(eventStartTime))
-datestr(unixTimeToMatlabTime(eventEndTime))
+line = repmat('_', 1, 20);
+disp(line);

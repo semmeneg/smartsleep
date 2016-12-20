@@ -30,10 +30,11 @@ allTime = [];
 allLabels = [];
 allData = [];
 
+LOG.trace('MSR', '_____________ Start processing MSR data ____________');
 for i = 1 : p.patientCount
     patienFolderName = p.allPatientFolders( i ).name;
     
-    LOG.trace('MSR', fprintf('Process patient: %s\n', patienFolderName));
+    LOG.trace('MSR', sprintf('Process patient: %s\n', ['----' patienFolderName '----']));
     
     % parse labeled events
     sleepPhaseParser = SleepPhaseEventParser([p.BASE_PATH patienFolderName '\1_raw\*.txt' ]);
@@ -48,7 +49,7 @@ for i = 1 : p.patientCount
         reader = MSRMatlabReader(rawDataFile, selectedRawDataChannels);
         rawData = reader.run();
         if(isempty(rawData))
-            disp('No data found for sensor.');
+            LOG.trace('MSR', 'No data found for sensor.');
             continue;
         end
         rawData.channelNames = selectedRawDataChannels;
@@ -99,10 +100,11 @@ allData = [];
 allLabels = [];
 allPatients = [];
 
+LOG.trace('Zephyr', '_____________ Start processing MSR data ____________');
 for i = 1 : p.patientCount
     patienFolderName = p.allPatientFolders( i ).name;
     
-    LOG.trace('Zephyr', fprintf('Process patient: %s\n', patienFolderName));
+    LOG.trace('Zephyr', sprintf('Process patient: %s\n', ['----' patienFolderName '----']));
     
     % parse labeled events
     labeledEventsFile = [p.BASE_PATH patienFolderName '\1_raw\*.txt' ];
@@ -114,7 +116,7 @@ for i = 1 : p.patientCount
     rawDataReader = ZephyrCsvReader(csvFile, selectedRawDataChannels);
     rawData = rawDataReader.run();
     if(isempty(rawData))
-        disp('No data found for person.');
+        LOG.trace('MSR', 'No data found for person.');
         continue;
     end
     rawData.channelNames = selectedRawDataChannels;

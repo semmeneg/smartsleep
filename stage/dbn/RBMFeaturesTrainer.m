@@ -36,6 +36,8 @@ classdef RBMFeaturesTrainer
         % Returns a features struct with data and labels
         function [ resultSet ] = run(obj)
             
+            Log.getLogger().infoStart(class(obj), 'run');
+            
             resultSet = struct('features', [], 'labels', obj.rawData.labels);
             
             dataSet = DataClasses.DataStore();
@@ -52,6 +54,8 @@ classdef RBMFeaturesTrainer
             fprintf('DBN train time used: %f seconds.\n', toc(tStart));
             
             resultSet.features = obj.dbn.getFeature( obj.rawData.data );
+            
+            Log.getLogger().infoEnd(class(obj), 'run');
             
         end
         
