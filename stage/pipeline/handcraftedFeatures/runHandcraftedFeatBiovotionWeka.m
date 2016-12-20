@@ -14,8 +14,8 @@ selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
 aggregationFunctions = { @energyFeature, @meanFeature, @rootMeanSquareFeature, ...
     @skewnessFeature, @stdFeature, @sumFeature, @vecNormFeature };
 
-allPatientsPath = [CONF.PATIENTS_DATA_PATH 'October2November2016Patients\' ];
-% allPatientsPath = [CONF.PATIENTS_DATA_PATH 'Temp\' ];
+allPatientsPath = [CONF.BASE_DATA_PATH 'October2November2016Patients\' ];
+% allPatientsPath = [CONF.BASE_DATA_PATH 'Temp\' ];
 
 files = dir( [ allPatientsPath 'P*' ] );
 dirFlags = [ files.isdir ];

@@ -6,8 +6,8 @@ classdef WekaClassifierTest < matlab.unittest.TestCase
     
     properties (TestParameter)
         
-        arffFile = {[CONF.PATIENTS_DATA_PATH 'UnitTest\classification\test.arff' ]};
-        resultFolderPath = {[CONF.PATIENTS_DATA_PATH 'UnitTest\classification\weka_result\' ]};
+        arffFile = {[CONF.BASE_DATA_PATH 'UnitTest\classification\test.arff' ]};
+        resultFolderPath = {[CONF.BASE_DATA_PATH 'UnitTest\classification\weka_result\' ]};
         trainedModelFileName = {'trainedWekaModel.model'};
         textResultFileName = {'wekaResults.txt'};
         csvResultFileName = {'wekaResults.csv'};

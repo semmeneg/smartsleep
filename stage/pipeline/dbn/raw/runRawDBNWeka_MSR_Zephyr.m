@@ -7,13 +7,10 @@ clear();
 LOG = Log.getLogger();
 
 % Common properties
-p.subFolder = '2016-12-19_Raw_DBN_Weka_with_MSR_Zephyr';
-% p.BASE_PATH = [CONF.PATIENTS_DATA_PATH '' ];
-p.BASE_PATH = [CONF.PATIENTS_DATA_PATH 'Temp\' ];
-
-SETUP_LOG = SetupLog([p.BASE_PATH 'setup.log']);
-SETUP_LOG.log('MSR & Zephyr');
-SETUP_LOG.log('Pipeline: Rawdata > DBN > Weka(RandomForest,10foldCross)');
+p.dataInputFolder = '2016_01-05_Persons';
+p.processingOutputFolder = '2016-12-20_Raw_DBN_Weka_with_MSR_Zephyr';
+% p.BASE_PATH = [CONF.BASE_DATA_PATH p.dataInputFolder '\'];
+p.BASE_PATH = [CONF.BASE_DATA_PATH 'Test\' p.dataInputFolder '\'];
 
 p.selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
 p.dataSources = {'MSR', 'Zephyr'};
@@ -63,7 +60,7 @@ for i = 1 : p.patientCount
         
         % merge label and events
         LOG.trace('MSR', 'merge patient labels and data');
-        merger = DefaultRawDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, p.selectedClasses, assumedEventDuration);
+        merger = DefaultRawDataAndLabelMerger(samplingFrequency, labeledEvents, interpolatedRawData, mandatoryChannelsName, p.selectedClasses, assumedEventDuration);
         [ sensorData, sensorTime, sensorLabels, channelNames ] = merger.run();
         
         sensors{end+1} = struct('time', sensorTime, 'labels', sensorLabels, 'data', sensorData);
@@ -133,7 +130,7 @@ for i = 1 : p.patientCount
     [ data, time, labels, channelNames ] = merger.run();
     
     % combine features and labels of all patients
-    allTime = [allTime ; data];
+    allTime = [allTime ; time];
     allData = [allData ; data];
     allLabels = [allLabels ; labels];
     
@@ -152,6 +149,9 @@ dbnInputData.data = allData;
 dbnInputData.labels = allLabels;
 
 inputComponents = floor(size( allData, 2 ));
+SETUP_LOG = SetupLog([p.BASE_PATH 'setup.log']);
+SETUP_LOG.log('MSR & Zephyr');
+SETUP_LOG.log('Pipeline: Rawdata > DBN > Weka(RandomForest,10foldCross)');
 SETUP_LOG.log(sprintf('%s %d', 'Rawdata components:', inputComponents));
 layersConfig =[struct('hiddenUnitsCount', floor(inputComponents /4), 'maxEpochs', 100); ...
                struct('hiddenUnitsCount', floor(inputComponents * 4), 'maxEpochs', 100)];
@@ -160,11 +160,18 @@ rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData);
 SETUP_LOG.logDBN(rbmTrainer.getDBN());
 higherOrderFeaturesDBN = rbmTrainer.run();
 
-wekaFolder = [ p.BASE_PATH 'all\' CONF.WEKA_DATA_SUBFOLDER '\'  p.subFolder];
+% Save DBN trained model
+dataSource = strjoin(p.dataSources, '_');
+dbnLearnedModelFolder = [ p.BASE_PATH '\processed\' CONF.DBN_DATA_SUBFOLDER '\'  p.processingOutputFolder];
+[s, mess, messid] = mkdir(dbnLearnedModelFolder);
+dbnLearnedModelFile = [dbnLearnedModelFolder '\dbn_trainedModel_' dataSource '.mat'];
+dbn = rbmTrainer.getDBN();
+save(dbnLearnedModelFile, 'dbn');
+
+wekaFolder = [ p.BASE_PATH '\processed\' CONF.WEKA_DATA_SUBFOLDER '\'  p.processingOutputFolder];
 [s, mess, messid] = mkdir(wekaFolder);
 
-% write ARFF file
-dataSource = strjoin(p.dataSources, '_');
+% write ARFF files
 arffFileName = [ wekaFolder '\handcrafted_features__' dataSource '.arff'];
 writer = WekaArffFileWriter(allData, allLabels, p.selectedClasses, arffFileName);
 writer.run();

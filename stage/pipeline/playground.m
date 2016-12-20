@@ -1,19 +1,11 @@
-% t = RBMFeaturesTrainerTest;
-% t.run();
+datestr(unixTimeToMatlabTime(1455144247))
+datestr(unixTimeToMatlabTime(1455144173))
 
 
-% LOG = Log.getLogger();
-SETUP_LOG = SetupLog('C:/Temp/test.log');
-SETUP_LOG.log('MSR & Zephyr');
-SETUP_LOG.log('Pipeline: Rawdata > DBN > Weka(RandomForest,10foldCross)');
+eventStartTime  = 1455144175;
+eventEndTime    = 1455144176;
 
-inputComponents = 2222;
-SETUP_LOG.log(sprintf('%s %d', 'Rawdata components:', inputComponents));
+[1455144174.40701;1455144175.40700;1455144176.40701;1455144177.40700;1455144178.40701;1455144179.40700;1455144180.40701;1455144181.40700;1455144182.40700;1455144183.40700]
 
-layersConfig =[struct('hiddenUnitsCount', floor(inputComponents /2), 'maxEpochs', 100); ...
-               struct('hiddenUnitsCount', floor(inputComponents * 2), 'maxEpochs', 200); ...
-               struct('hiddenUnitsCount', floor(inputComponents * 4), 'maxEpochs', 300)];
-
-rbmTrainer = RBMFeaturesTrainer(layersConfig, []);
-
-SETUP_LOG.logDBN(rbmTrainer.getDBN());
+datestr(unixTimeToMatlabTime(eventStartTime))
+datestr(unixTimeToMatlabTime(eventEndTime))

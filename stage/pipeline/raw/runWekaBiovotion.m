@@ -17,7 +17,7 @@ assumedEventDuration = 30; % seconds
 mandatoryChannelsName = {};
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
 
-allPatientsPath = [CONF.PATIENTS_DATA_PATH 'October2November2016Patients\' ];
+allPatientsPath = [CONF.BASE_DATA_PATH 'October2November2016Patients\' ];
 
 files = dir( [ allPatientsPath 'P*' ] );
 dirFlags = [ files.isdir ];

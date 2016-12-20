@@ -33,13 +33,17 @@ classdef SamplingRateInterpolationAndDecimation
             for timestamp = timestamps'
                 matlabTime =  datestr((timestamp + datenum(1970,1,1,0,0,0) * 86400)/86400);
                 
-                transformedRawData.time = [ transformedRawData.time ; ones(obj.targetSamplingFrequency,1)*timestamp ];
                 nextTimestamp = timestamp+1;
                 idx = find(obj.rawData.time >= timestamp & obj.rawData.time < nextTimestamp );
                 samplingFrequency = length(idx);
                 if(samplingFrequency == obj.targetSamplingFrequency)
+                    transformedRawData.time = [ transformedRawData.time ; ones(obj.targetSamplingFrequency,1)*timestamp ];
                     transformedRawData.data = [transformedRawData.data ; obj.rawData.data(idx,:)];
                     continue;
+                end
+                
+                if(samplingFrequency == 1)
+                    continue; % skip event, cannot interpolate single record
                 end
                 
                 dataBlock = obj.rawData.data(idx,:);
@@ -53,6 +57,7 @@ classdef SamplingRateInterpolationAndDecimation
                 for channel = 1 : size(dataBlock,2)
                     interpolatedDataBlock(:,channel) = interp1(dataBlockIdx,dataBlock(:,channel),interpIdx);
                 end
+                transformedRawData.time = [ transformedRawData.time ; ones(obj.targetSamplingFrequency,1)*timestamp ];
                 transformedRawData.data = [transformedRawData.data ; interpolatedDataBlock];
             end
         end

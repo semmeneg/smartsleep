@@ -14,7 +14,7 @@ classdef ZephyrDataAndLabelMergerTest < matlab.unittest.TestCase
     end
     
     properties(MethodSetupParameter)
-        rawDataFile = {[CONF.PATIENTS_DATA_PATH 'UnitTest\transformation\Zephyr_Rawdata.csv' ]};
+        rawDataFile = {[CONF.BASE_DATA_PATH 'UnitTest\transformation\Zephyr_Rawdata.csv' ]};
     end    
     
     properties (TestParameter)

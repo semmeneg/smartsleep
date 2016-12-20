@@ -10,8 +10,8 @@ preprocess = true;
 subFolderOutput = '2016-12-01_Biovotion_DBN_Features_L1x4_L2x4_L2x2_Weka_Classified';
 subFolderInput = subFolderOutput;
 
-allPatientsPath = [CONF.PATIENTS_DATA_PATH 'October2November2016Patients\' ];
-% allPatientsPath = [CONF.PATIENTS_DATA_PATH 'Temp\' ];
+allPatientsPath = [CONF.BASE_DATA_PATH 'October2November2016Patients\' ];
+% allPatientsPath = [CONF.BASE_DATA_PATH 'Temp\' ];
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
 

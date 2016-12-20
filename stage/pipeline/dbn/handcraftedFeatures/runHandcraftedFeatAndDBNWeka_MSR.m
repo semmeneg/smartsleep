@@ -5,8 +5,8 @@ clear();
 
 subFolder = '2016-12-14_HandcraftedFeat_Weka_with_MSR';
 
-BASE_PATH = [CONF.PATIENTS_DATA_PATH '' ];
-% BASE_PATH = [CONF.PATIENTS_DATA_PATH 'Temp\' ];
+BASE_PATH = [CONF.BASE_DATA_PATH '' ];
+% BASE_PATH = [CONF.BASE_DATA_PATH 'Temp\' ];
 
 dataSource = 'MSR';
 

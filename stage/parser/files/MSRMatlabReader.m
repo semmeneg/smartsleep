@@ -47,9 +47,9 @@ classdef MSRMatlabReader
             end
             
             t = datenum( InfoStartTime, 'yyyy-mm-dd HH:MM:SS' );
-            startTimeInMs = matlabTimeToUnixTime( t );
+            unixStartTimeInSeconds = matlabTimeToUnixTime( t );
             
-            dataSet.time = MSR( timeChannelIndex, : )' + startTimeInMs;
+            dataSet.time = MSR( timeChannelIndex, : )' + unixStartTimeInSeconds;
             dataSet.channelNames = obj.selectedChannels;
         end
         

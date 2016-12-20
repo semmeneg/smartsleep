@@ -5,8 +5,8 @@
 classdef SleepPhaseEventParserTest < matlab.unittest.TestCase
     
     properties (TestParameter)
-        txtEventFile = {[CONF.PATIENTS_DATA_PATH 'UnitTest\parser\*-Events.txt' ]};
-        docxDerrivedEventFile = {[CONF.PATIENTS_DATA_PATH 'UnitTest\parser\events_docx.txt ' ]};
+        txtEventFile = {[CONF.BASE_DATA_PATH 'UnitTest\parser\*-Events.txt' ]};
+        docxDerrivedEventFile = {[CONF.BASE_DATA_PATH 'UnitTest\parser\events_docx.txt ' ]};
     end
     
     

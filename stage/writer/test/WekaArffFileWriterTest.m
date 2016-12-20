@@ -17,7 +17,7 @@ classdef WekaArffFileWriterTest < matlab.unittest.TestCase
         
         labels = {[2;3;3;4;3;4;5;1]};
         classes = {{'R','W','N1','N2','N3'}};
-        arffFileName = {[CONF.PATIENTS_DATA_PATH 'UnitTest\writer\test.arff' ]};
+        arffFileName = {[CONF.BASE_DATA_PATH 'UnitTest\writer\test.arff' ]};
         
     end
     

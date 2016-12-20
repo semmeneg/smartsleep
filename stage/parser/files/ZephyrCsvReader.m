@@ -3,7 +3,7 @@
 classdef ZephyrCsvReader
     
     properties(Constant)
-        TIMEFORMAT = 'dd/mm/yyyy HH:MM:SS';
+        TIMEFORMAT = 'dd/mm/yyyy HH:MM:SS.FFF';
     end
     
     properties
@@ -37,6 +37,7 @@ classdef ZephyrCsvReader
             timeStrs = table2cell( time );
             
             zephyr.data = table2array( t( :, obj.selectedChannels ) );
+            zephyr.data = str2double(zephyr.data);
             zephyr.time = zeros( tableSize, 1 );
             
             for i = 1 : tableSize

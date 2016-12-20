@@ -5,7 +5,7 @@
 classdef MSRMatlabReaderTest < matlab.unittest.TestCase
     
     properties (TestParameter)
-        file = {[CONF.PATIENTS_DATA_PATH 'UnitTest\parser\MSR\test.mat' ]};
+        file = {[CONF.BASE_DATA_PATH 'UnitTest\parser\MSR\test.mat' ]};
         selectedChannels = {{ 'ACC x', 'ACC y', 'ACC z' }};
     end
     

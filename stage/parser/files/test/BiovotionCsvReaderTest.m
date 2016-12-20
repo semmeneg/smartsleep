@@ -5,7 +5,7 @@
 classdef BiovotionCsvReaderTest < matlab.unittest.TestCase
     
     properties (TestParameter)
-        csvFile = {[CONF.PATIENTS_DATA_PATH 'UnitTest\parser\biovotion\*.txt' ]};
+        csvFile = {[CONF.BASE_DATA_PATH 'UnitTest\parser\biovotion\*.txt' ]};
         selectedChannels = {{ 'Value05','Value06','Value07','Value08','Value09','Value10','Value11' }};
     end
     

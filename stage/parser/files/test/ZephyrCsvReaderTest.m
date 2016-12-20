@@ -5,7 +5,7 @@
 classdef ZephyrCsvReaderTest < matlab.unittest.TestCase
     
     properties (TestParameter)
-        csvFile = {[CONF.PATIENTS_DATA_PATH 'UnitTest\parser\Zephyr\*Summary.csv' ]};
+        csvFile = {[CONF.BASE_DATA_PATH 'UnitTest\parser\Zephyr\*Summary.csv' ]};
         selectedChannels = {{ 'HR', 'BR', 'PeakAccel', ...
         'BRAmplitude', 'ECGAmplitude', ...
         'VerticalMin', 'VerticalPeak', ...
@@ -20,6 +20,8 @@ classdef ZephyrCsvReaderTest < matlab.unittest.TestCase
             zephyrCsvReader = ZephyrCsvReader(csvFile, selectedChannels);
             zephyr = zephyrCsvReader.run();
             testCase.assertNotEmpty(zephyr);
+            testCase.assertTrue(sum(isnan(zephyr.time)) == 0);
+            testCase.assertTrue(sum(sum(isnan(zephyr.data))) == 0);
         end
     end
 end
