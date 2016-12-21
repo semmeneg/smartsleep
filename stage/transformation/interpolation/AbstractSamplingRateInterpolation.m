@@ -1,9 +1,8 @@
-% Interpolates or decimates samples within a second to a defined sampling
-% rate (frequency).
+% Base class for sampling frequency based data interpolation or decimation. 
 %
-classdef SamplingRateInterpolationAndDecimation
+classdef (Abstract) AbstractSamplingRateInterpolation
     
-    properties
+    properties(Access = protected)
         targetSamplingFrequency = [];
         rawData = [];
     end
@@ -13,7 +12,7 @@ classdef SamplingRateInterpolationAndDecimation
         %
         % param targetSamplingFrequency target sampling frequency (Hz) after interpolation or decimation
         % param rawData is a struct with 'time', 'data', 'channelNames' (optional)
-        function obj = SamplingRateInterpolationAndDecimation(targetSamplingFrequency, rawData)
+        function obj = AbstractSamplingRateInterpolation(targetSamplingFrequency, rawData)
             obj.targetSamplingFrequency = targetSamplingFrequency;
             obj.rawData = rawData;
         end
@@ -44,27 +43,22 @@ classdef SamplingRateInterpolationAndDecimation
                     continue;
                 end
                 
-                if(samplingFrequency == 1)
-                    continue; % skip event, cannot interpolate single record
+                transformedDataBlock = interpolate(obj, idx);
+                if(isempty(transformedDataBlock))
+                    continue;
                 end
                 
-                dataBlock = obj.rawData.data(idx,:);
-                
-                dataBlockIdx = 1:samplingFrequency;
-                stepSize = (samplingFrequency-1)/(obj.targetSamplingFrequency-1);
-                
-                interpIdx = 1:stepSize:length(dataBlockIdx);
-                
-                interpolatedDataBlock = [];
-                for channel = 1 : size(dataBlock,2)
-                    interpolatedDataBlock(:,channel) = interp1(dataBlockIdx,dataBlock(:,channel),interpIdx);
-                end
                 transformedRawData.time = [ transformedRawData.time ; ones(obj.targetSamplingFrequency,1)*timestamp ];
-                transformedRawData.data = [transformedRawData.data ; interpolatedDataBlock];
+                transformedRawData.data = [transformedRawData.data ; transformedDataBlock];
             end
+            
             Log.getLogger().infoEnd(class(obj), 'run');
         end
     end
+    
+    methods(Abstract)
+        transformedDataBlock = interpolate(obj, eventWindowDataIdx)
+    end    
     
 end
 

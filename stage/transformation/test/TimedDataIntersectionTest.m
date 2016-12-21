@@ -22,13 +22,12 @@ classdef TimedDataIntersectionTest < matlab.unittest.TestCase
             
             testCase.assertNotEmpty(labels);
             testCase.assertEqual(size(labels,1), 4);
-            testCase.assertEqual(time(1), 'N2');
+            testCase.assertEqual(labels(1), {'N2'});
             
             testCase.assertNotEmpty(data);
             testCase.assertEqual(size(data,1), 4);
-            testCase.assertEqual
             dataSet2 = dataSets{2};
-            testCase.assertEqual(sum(data(:,4)), sum(dataSet2(:,1)), 'AbsTol', 0.01);
+            testCase.assertEqual(sum(data(:,4)), sum(dataSet2.data(1:4,1)), 'AbsTol', 0.01);
             
         end
     end
