@@ -8,7 +8,7 @@ LOG = Log.getLogger();
 
 % Common properties
 p.dataInputFolder = '2016_01-05_Persons';
-p.processingOutputFolder = '2016-12-20_Raw_DBN_Weka_with_MSR_Zephyr';
+p.processingOutputFolder = '2016-12-21_Raw_DBN_Weka_with_MSR_Zephyr';
 % p.BASE_PATH = [CONF.BASE_DATA_PATH p.dataInputFolder '\'];
 p.BASE_PATH = [CONF.BASE_DATA_PATH 'Test\' p.dataInputFolder '\'];
 
@@ -56,7 +56,7 @@ for i = 1 : p.patientCount
         
         % linear interpolate/decimate values to fit target sampling frequency
         LOG.trace('MSR', 'interpolate patient');
-        interpolator = SamplingRateInterpolationAndDecimation(samplingFrequency, rawData);
+        interpolator = DiffSamplingRateInterpolation(samplingFrequency, rawData);
         interpolatedRawData = interpolator.run();
         
         % merge label and events
@@ -123,7 +123,7 @@ for i = 1 : p.patientCount
     
     % linear interpolate/decimate values to fit target sampling frequency
     LOG.trace('Zephyr', 'interpolate patient');
-    interpolator = SamplingRateInterpolationAndDecimation(samplingFrequency, rawData);
+    interpolator = DiffSamplingRateInterpolation(samplingFrequency, rawData);
     interpolatedRawData = interpolator.run();
     
     % merge label and events
@@ -174,8 +174,8 @@ dbn = rbmTrainer.getDBN();
 save(dbnLearnedModelFile, 'dbn');
 
 % write ARFF files
-arffFileName = [ resultFolder '\handcrafted_features__' dataSource '.arff'];
-writer = WekaArffFileWriter(allData, allLabels, p.selectedClasses, arffFileName);
+arffFileName = [ resultFolder '\dbn_created_features__' dataSource '.arff'];
+writer = WekaArffFileWriter(higherOrderFeaturesDBN.features, higherOrderFeaturesDBN.labels, p.selectedClasses, arffFileName);
 writer.run();
 
 % run Weka classifier

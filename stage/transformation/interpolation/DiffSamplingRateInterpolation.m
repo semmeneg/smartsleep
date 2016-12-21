@@ -21,7 +21,7 @@ classdef DiffSamplingRateInterpolation < AbstractSamplingRateInterpolation
             transformedDataBlock = [];
             samplingFrequency = length(eventWindowDataIdx);
             
-            if(eventWindowDataIdx(end) == size(obj.rawData, 1))
+            if(eventWindowDataIdx(end) == size(obj.rawData.data, 1))
                 return; % last one, just skipped.
             end
             
