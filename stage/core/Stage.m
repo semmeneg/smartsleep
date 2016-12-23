@@ -3,13 +3,28 @@
 %
 classdef (Abstract) Stage
     
-    methods(Abstract)
-        out = run(obj);
+    properties(Access = protected)
+        props;
+    end
+    
+    methods(Abstract, Access = public)
+        out = run(obj, parameterSet);
+    end
+    
+    methods(Abstract, Access = protected)
         validateInput(obj);
         validateOutput(obj);
     end
     
-    methods
+    methods(Access = public)
+        function obj = Stage(propertySet)
+            obj.props = propertySet;
+            obj.validateInput();
+            obj.validateOutput();
+        end
+    end
+    
+    methods(Access = protected)
         function validateField(obj, variable, name, typeCheckFunction)
             
             msg = [class(obj) ': Input validation failed for struct field: ' name ];

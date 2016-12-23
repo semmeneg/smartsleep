@@ -1,7 +1,7 @@
 % AbstractDataAndLabelMerger is a base class for merging sensor data with labeled
 % events which each cover a duration (time window).
 
-classdef (Abstract) AbstractDataAndLabelMerger < Stage
+classdef (Abstract) AbstractDataAndLabelMerger
     properties
         samplingFrequency = [];
         labeledEvents = [];
@@ -118,6 +118,39 @@ classdef (Abstract) AbstractDataAndLabelMerger < Stage
         featureVectorCount = getFeatureVectorCount(obj)
         filteredData = filterData(obj, eventWindowData)
         featureVector = createFeatureVector(obj, eventWindowData)
+    end
+    
+    methods(Access = protected)
+        function validateField(obj, variable, name, typeCheckFunction)
+            
+            msg = [class(obj) ': Input validation failed for struct field: ' name ];
+            
+            if(~isstruct(variable))
+                error([msg ' -> struct variable is empty.']);
+            end
+            
+            if(~isfield(variable, name))
+                error([msg ' -> field is missing.']);
+            end
+            
+            if(~typeCheckFunction(getfield(variable, name)))
+                error([msg ' -> value does not fit type.']);
+            end
+        end
+        
+        function validateCellArray(obj, variable, typeCheckFunction)
+            
+            msg = [class(obj) ': Input validation failed for cell array of single type ' ];
+            
+            if(isempty(variable))
+                error([msg ' -> variable is empty.']);
+            end
+            
+            if(~typeCheckFunction(variable))
+                error([msg ' -> values do not fit type.']);
+            end
+        end
+        
     end
     
 end

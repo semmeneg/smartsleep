@@ -1,10 +1,9 @@
-% Pipeline class with list of stages which will be called in order. 
+% Base Pipeline class with list of stages which will be called in order. 
 %
 classdef Pipeline < Stage
     
     properties
         stages = [];
-        propertySetIn = [];
     end
     
         
@@ -17,12 +16,12 @@ classdef Pipeline < Stage
             obj.stages = [obj.stages ; stage];
         end
         
-        function propertySetOut = run(obj)
-            dataset = obj.propertySetIn; % first input
+        function propertySetOut = run(obj, propertySetIn)
+            propertySet = propertySetIn; % first input
             for stage = obj.stages
-                dataset = stage.run(dataset);
+                propertySet = stage.run(propertySet);
             end
-            propertySetOut = dataset;
+            propertySetOut = propertySet;
         end
     end
 end

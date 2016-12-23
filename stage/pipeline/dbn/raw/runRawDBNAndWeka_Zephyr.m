@@ -1,121 +1,83 @@
-% This pipline parses Zephyr raw data and labeled events and merges
-% them. The .
+% Create higher order features with DBN and run
+% Weka Random Forest classifer on merged data input.
+
 tic
 clear();
 
-LOG = Logger.getLogger('Zephyr DBN');
+LOG = Log.getLogger();
 
-preprocess = true;
-subFolderOutput = '2016-11-30_Zephyir_DBN_Features_L1x4_L2x4_L3x2_Weka_Classified';
-subFolderInput = subFolderOutput;
-
-allPatientsPath = [CONF.BASE_DATA_PATH '' ];
-% allPatientsPath = [CONF.BASE_DATA_PATH 'Temp\' ];
+% Common properties
+dataInputFolder = '2016_01-05_Persons';
+processingOutputFolder = '2016-12-23_Raw_DBN_Weka_with_Zephyr';
+BASE_PATH = [CONF.BASE_DATA_PATH dataInputFolder '\'];
+% BASE_PATH = [CONF.BASE_DATA_PATH 'Test\' dataInputFolder];
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
+dataSources = {'Zephyr'};
 
-% Preprocessing
-if(preprocess)
-    
-    selectedRawDataChannels = { 'HR', 'BR', 'PeakAccel', ...
+sensors = [];
+
+% Process Zephyr data
+props = [];
+props.rawDataSetsFolderPattern = [ BASE_PATH '\Patient*' ];
+props.basePath = BASE_PATH;
+props.selectedRawDataChannels = { 'HR', 'BR', 'PeakAccel', ...
     'BRAmplitude', 'ECGAmplitude', ...
     'VerticalMin', 'VerticalPeak', ...
     'LateralMin', 'LateralPeak', 'SagittalMin', 'SagittalPeak' };
+props.mandatoryChannelsName = { 'HR', 'BR' };
+props.samplingFrequency = 1; % Hz
+props.assumedEventDuration = 30; % seconds
+props.selectedClasses = selectedClasses;
 
-    samplingFrequency = 1; % Hz
-    assumedEventDuration = 30; % seconds
-    mandatoryChannelsName = { 'HR', 'BR' };
-    
-    aggregationFunctions = { @energyFeature, @meanFeature, @rootMeanSquareFeature, ...
-        @skewnessFeature, @stdFeature, @sumFeature, @vecNormFeature };
-    
-    files = dir( [ allPatientsPath 'P*' ] );
-    dirFlags = [ files.isdir ];
-    allPatientFolders = files( dirFlags );
-    
-    patientCount = length( allPatientFolders );
-    
-    allData = [];
-    allLabels = [];
-    allPatients = [];
-    
-    for i = 1 : patientCount
-        patienFolderName = allPatientFolders( i ).name;
-        
-        fprintf('Process patient: %s\n', patienFolderName);
-        
-        % 1. parse labeled events
-        labeledEventsFile = [allPatientsPath patienFolderName '\1_raw\*.txt' ];
-        sleepPhaseParser = SleepPhaseEventParser(labeledEventsFile);
-        labeledEvents = sleepPhaseParser.run();
-        
-        % 2. parse raw data
-        LOG.logStart('Parse raw data');
-        csvFile = [allPatientsPath patienFolderName '\1_raw\Zephyr\*_Summary.csv' ];
-        rawDataReader = ZephyrCsvReader(csvFile, selectedRawDataChannels);
-        rawData = rawDataReader.run();
-        if(isempty(rawData))
-            disp('No data found for person.');
-            continue;
-        end
-        rawData.channelNames = selectedRawDataChannels;
-        LOG.logEnd('Parse raw data');
-        
-        % 3. linear interpolate/decimate values to fit target sampling frequency
-        LOG.logStart('Interpolation');
-        interpolator = SamplingRateInterpolationAndDecimation(samplingFrequency, rawData);
-        interpolatedRawData = interpolator.run();
-        LOG.logEnd('Interpolation');
-        
-        %4. merge label and events
-        LOG.logStart('Merge labels and events');
-        merger = DefaultRawDataAndLabelMerger(samplingFrequency, labeledEvents, interpolatedRawData, mandatoryChannelsName, selectedClasses, assumedEventDuration);
-        [ data, time, labels, channelNames ] = merger.run();
-        LOG.logEnd('Merge labels and events');
-        
-        %5. combine features and labels of all patients
-        allData = [allData ; data];
-        allLabels = [allLabels ; labels];
-        
-    end
-    
-    allData(isnan(allData)) = 0;
-    
-    preprocessedFolder = [ allPatientsPath 'all\' CONF.PREPROCESSED_DATA_SUBFOLDER '\' subFolderOutput];
-    [s, mess, messid] = mkdir(preprocessedFolder);
-    
-    % save labeled raw data (dbn input)
-    save([preprocessedFolder '\labeled_raw_data__Zephyr.mat' ], 'allData', 'allLabels');
-else
-    load([allPatientsPath 'all\' CONF.PREPROCESSED_DATA_SUBFOLDER '\' subFolderInput '\labeled_raw_data__Zephyr.mat' ]);
-    
-end
+preprocessor = ZephyrPreprocessor(props);
+zephyrDataSets = preprocessor.run();
 
-%6. Run DBN (RBM)
-dbnInputData.data = allData;
-dbnInputData.labels = allLabels;
+sensors{end+1} = zephyrDataSets;
 
-inputComponents = floor(size( allData, 2 ));
-layersConfig =[struct('hiddenUnitsCount', floor(inputComponents *4), 'maxEpochs', 100);struct('hiddenUnitsCount', floor(inputComponents *4), 'maxEpochs', 100);struct('hiddenUnitsCount', floor(inputComponents *2), 'maxEpochs', 100)];
+sensorDataMerger = NamedDataSetsIntersection();
+[ mergedDataSets ] = sensorDataMerger.run(sensors);
+
+%Split data(sets) in trainings and validation data
+splittedData = DataGroupsStratificator(mergedDataSets, [1.0, 0.0, 0.0]);
+
+resultFolder = [ BASE_PATH '\processed\' CONF.WEKA_DATA_SUBFOLDER '\'  processingOutputFolder];
+[s, mess, messid] = mkdir(resultFolder);
+
+% Run DBN (RBM)
+dbnInputData.data = splittedData.trainData;
+dbnInputData.labels = splittedData.trainLabels;
+
+inputComponents = floor(size( dbnInputData.data, 2 ));
+SETUP_LOG = SetupLog([resultFolder '\setup.log']);
+SETUP_LOG.log('MSR & Zephyr');
+SETUP_LOG.log('Pipeline: Rawdata > DBN > Weka(RandomForest,10foldCross)');
+SETUP_LOG.log(sprintf('%s %d', 'Rawdata components:', inputComponents));
+layersConfig =[struct('hiddenUnitsCount', floor(inputComponents * 4), 'maxEpochs', 150); ...
+               struct('hiddenUnitsCount', floor(inputComponents * 4), 'maxEpochs', 150)];
 
 rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData);
+SETUP_LOG.logDBN(rbmTrainer.getDBN());
 higherOrderFeaturesDBN = rbmTrainer.run();
 
-wekaFolder = [ allPatientsPath 'all\' CONF.WEKA_DATA_SUBFOLDER '\'  subFolderOutput];
-[s, mess, messid] = mkdir(wekaFolder);
+% Save DBN trained model
+dataSource = strjoin(dataSources, '_');
+dbnLearnedModelFolder = [ BASE_PATH '\processed\' CONF.DBN_DATA_SUBFOLDER '\'  processingOutputFolder];
+[s, mess, messid] = mkdir(dbnLearnedModelFolder);
+dbnLearnedModelFile = [dbnLearnedModelFolder '\dbn_trainedModel_' dataSource '.mat'];
+dbn = rbmTrainer.getDBN();
+save(dbnLearnedModelFile, 'dbn');
 
-%7. write ARFF file
-arffFileName = [ wekaFolder '\dbn_created_features__Zephyr.arff'];
+% write ARFF files
+arffFileName = [ resultFolder '\dbn_created_features__' dataSource '.arff'];
 writer = WekaArffFileWriter(higherOrderFeaturesDBN.features, higherOrderFeaturesDBN.labels, selectedClasses, arffFileName);
 writer.run();
 
-%8. run Weka classifier
-
-trainedModelFileName = 'weka_out__Zephyr.model';
-textResultFileName = 'weka_out_confusion_matrix__Zephyr.txt';
+% run Weka classifier
+trainedModelFileName = ['weka_out__' dataSource '.model'];
+textResultFileName = ['weka_out_confusion_matrix__' dataSource '.txt'];
 csvResultFileName = 'cm.csv';
-classifier = WekaClassifier(arffFileName, [], wekaFolder, trainedModelFileName, textResultFileName, csvResultFileName, 'Zephyr Raw DBN');
+classifier = WekaClassifier(arffFileName, [], resultFolder, trainedModelFileName, textResultFileName, csvResultFileName, dataSource);
 classifier.run();
 
 toc
-
