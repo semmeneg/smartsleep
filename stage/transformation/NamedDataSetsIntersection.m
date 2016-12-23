@@ -20,7 +20,7 @@ classdef NamedDataSetsIntersection
             end
             
             if(length(dataSetsGroups) == 1)
-                mergedDataSets = dataSets{1};
+                mergedDataSets = dataSetsGroups{1};
                     return;
             end
             
