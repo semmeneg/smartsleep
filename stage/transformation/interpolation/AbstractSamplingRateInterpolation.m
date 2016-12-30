@@ -32,8 +32,6 @@ classdef (Abstract) AbstractSamplingRateInterpolation
             
             timestamps = unique(floor(obj.rawData.time));
             for timestamp = timestamps'
-                matlabTime =  datestr((timestamp + datenum(1970,1,1,0,0,0) * 86400)/86400);
-                
                 nextTimestamp = timestamp+1;
                 idx = find(obj.rawData.time >= timestamp & obj.rawData.time < nextTimestamp );
                 samplingFrequency = length(idx);

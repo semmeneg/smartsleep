@@ -55,14 +55,14 @@ classdef MSRPreprocessor < Stage
                     end
                     rawData.channelNames = obj.props.selectedRawDataChannels;
                     
-                    % linear interpolate/decimate values to fit target sampling frequency
-                    LOG.trace('MSR', 'interpolate dataset');
-                    interpolator = DiffSamplingRateInterpolation(obj.props.samplingFrequency, rawData);
-                    interpolatedRawData = interpolator.run();
+%                     % linear interpolate/decimate values to fit target sampling frequency
+%                     LOG.trace('MSR', 'interpolate dataset');
+%                     interpolator = DiffSamplingRateInterpolation(obj.props.samplingFrequency, rawData);
+%                     interpolatedRawData = interpolator.run();
                     
                     % merge label and events
                     LOG.trace('MSR', 'merge labels and data');
-                    merger = DefaultRawDataAndLabelMerger(obj.props.samplingFrequency, labeledEvents, interpolatedRawData, obj.props.mandatoryChannelsName, obj.props.selectedClasses, obj.props.assumedEventDuration);
+                    merger = MSRRawDataAndLabelMerger(obj.props.samplingFrequency, labeledEvents, rawData, obj.props.mandatoryChannelsName, obj.props.selectedClasses, obj.props.assumedEventDuration);
                     [ sensorData, sensorTime, sensorLabels, channelNames ] = merger.run();
                     
                     sensors{sensorIdx} = struct('time', sensorTime, 'labels', sensorLabels, 'data', sensorData);
@@ -95,7 +95,7 @@ classdef MSRPreprocessor < Stage
             obj.validateField(obj.props, 'sensorsRawDataFilePatterns', @iscellstr);
             obj.validateField(obj.props, 'selectedRawDataChannels', @iscellstr);
             obj.validateField(obj.props, 'mandatoryChannelsName', @iscellstr);
-            obj.validateField(obj.props, 'samplingFrequency', @isPositiveInteger);
+%             obj.validateField(obj.props, 'samplingFrequency', @isPositiveInteger);
             obj.validateField(obj.props, 'selectedClasses', @iscellstr);
             obj.validateField(obj.props, 'assumedEventDuration', @isPositiveInteger);
         end

@@ -1,14 +1,10 @@
-% DefaultRawDataAndLabelMerger is a base class for merging raw sensor data with labeled
+% MSRRawDataAndLabelMerger merges raw sensor data with labeled
 % events which each cover a duration (time window).
+% The filter for MSR skips event data if less as half of the samples have 0
+% values on each channel. 
 
-classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
+classdef MSRRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
     
-    properties
-        assumedEventDuration = [];
-        featureVectorCount = [];
-        samplesPerChannel = [];
-    end
-
     methods
         
         %% Constructor
@@ -19,39 +15,22 @@ classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
         % param mandatoryChannelsName array of channels not expected to be empty (0), otherwise the whole data vector is skipped.
         % param selectedClasses lists the considered event classes(labels). The others shall be skipped.
         % param assumedEventDuration defines the time window resp. durations of labeled events which shall be considered
-        function obj = DefaultRawDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses, assumedEventDuration)
-            obj = obj@AbstractDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses);
-            obj.assumedEventDuration = assumedEventDuration;
-            obj.samplesPerChannel = ceil(obj.samplingFrequency * obj.assumedEventDuration); %rounded up
-            channelsCount = length( obj.rawData.channelNames );
-            obj.featureVectorCount = channelsCount * obj.samplesPerChannel;
+        function obj = MSRRawDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses, assumedEventDuration)
+            obj = obj@DefaultRawDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses, assumedEventDuration);
         end
         
-        %% The feature vector count resp. the amount of the components is
-        % calculated based on the amount of channels, the sampling
-        % frequency and the event time window duration.
-        function featureVectorCount = getFeatureVectorCount(obj)
-            featureVectorCount = obj.featureVectorCount;
-        end
-        
-        %% Skip the labeled event window if the expected set of
-        % matching raw data is not fully available (ex. at the beginning or if mandatory channels are "0").
+        %% Skips event data if less as half of the samples have 0
+        % values on each channel. 
         function filterdData = filterData(obj, eventWindowData)
             
                 filterdData = eventWindowData;
                             
-                % skip event if one value of required channels value is 0
-                for channel = obj.mandatoryChannelsName
-                    channelId = strmatch(channel, obj.rawData.channelNames, 'exact');
-                    if( sum(~any(eventWindowData(:,channelId),2)) > 0)
-                        filterdData = [];
-                        return;
-                    end
-                end
+                % skip sample if all channels are 0
+               filterdData( ~any(filterdData,2), : ) = [];
                 
                 %skip event if less than half of the expected samples per
                 %window are available.
-                if(size(eventWindowData,1) < (obj.samplingFrequency * obj.assumedEventDuration)/2)
+                if(size(filterdData,1) < (obj.samplingFrequency * obj.assumedEventDuration)/2)
                     filterdData = [];
                 end
         end

@@ -8,32 +8,30 @@ LOG = Log.getLogger();
 
 % Common properties
 dataInputFolder = '2016_01-05_Persons';
-processingOutputFolder = '2016-12-23_Raw_DBN_Weka_with_Zephyr';
+processingOutputFolder = '2016-12-29_Raw_DBN_Weka_with_MSR';
 BASE_PATH = [CONF.BASE_DATA_PATH dataInputFolder '\'];
 % BASE_PATH = [CONF.BASE_DATA_PATH 'Test\' dataInputFolder];
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
-dataSources = {'Zephyr'};
+dataSources = {'MSR'};
 
-sensors = [];
-
-% Process Zephyr data
+% process MSR
 props = [];
 props.rawDataSetsFolderPattern = [ BASE_PATH '\Patient*' ];
 props.basePath = BASE_PATH;
-props.selectedRawDataChannels = { 'HR', 'BR', 'PeakAccel', ...
-    'BRAmplitude', 'ECGAmplitude', ...
-    'VerticalMin', 'VerticalPeak', ...
-    'LateralMin', 'LateralPeak', 'SagittalMin', 'SagittalPeak' };
-props.mandatoryChannelsName = { 'HR', 'BR' };
-props.samplingFrequency = 1; % Hz
+props.sensorsRawDataFilePatterns = {'*HAND.mat', '*FUSS.mat'};
+props.selectedRawDataChannels = { 'ACC x', 'ACC y', 'ACC z' };
+props.mandatoryChannelsName = props.selectedRawDataChannels;
+props.samplingFrequency = 19.7; % MSR 145B frequency: ~19.7 Hz (512/26) leads to 591 samples per 30s window
 props.assumedEventDuration = 30; % seconds
 props.selectedClasses = selectedClasses;
 
-preprocessor = ZephyrPreprocessor(props);
-zephyrDataSets = preprocessor.run();
+preprocessor = MSRPreprocessor(props);
+msrDataSets = preprocessor.run();
 
-sensors{end+1} = zephyrDataSets;
+
+sensors = [];
+sensors{end+1} = msrDataSets;
 
 sensorDataMerger = NamedDataSetsIntersection();
 [ mergedDataSets ] = sensorDataMerger.run(sensors);
@@ -53,7 +51,7 @@ SETUP_LOG = SetupLog([resultFolder '\setup.log']);
 SETUP_LOG.log(strjoin(dataSources, ' & '));
 SETUP_LOG.log('Pipeline: Rawdata > DBN > Weka(RandomForest,10foldCross)');
 SETUP_LOG.log(sprintf('%s %d', 'Rawdata components:', inputComponents));
-layersConfig =[struct('hiddenUnitsCount', floor(inputComponents * 4), 'maxEpochs', 150); ...
+layersConfig =[struct('hiddenUnitsCount', floor(inputComponents /4), 'maxEpochs', 150); ...
                struct('hiddenUnitsCount', floor(inputComponents * 4), 'maxEpochs', 150)];
 
 rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData);

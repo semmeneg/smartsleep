@@ -44,6 +44,14 @@ classdef (Abstract) AbstractDataAndLabelMerger
             labels = zeros( eventCount, 1 );
             
             for i = 1 : eventCount
+                
+                % consider only defined classes
+                eventName = obj.labeledEvents.names{ i };
+                eventNameIdx = findStrInCell( obj.selectedClasses, eventName );
+                if(isempty(eventNameIdx))
+                    continue;
+                end
+                                
                 eventStartTime = obj.labeledEvents.time( i );
                 eventDuration = obj.labeledEvents.durations( i );
                 eventEndTime = eventStartTime + eventDuration;
@@ -54,11 +62,7 @@ classdef (Abstract) AbstractDataAndLabelMerger
                     end
                 end
                 
-                % extract sensor-data indices for the duration of the event.
-                % Round() function is required to avoid fraction problems when
-                % comparing doubles in find() (ex. eventEndTime might be sliglty
-                % smaller than obj.rawData.time on same second!
-                dataIdx = find( round(obj.rawData.time) >= round(eventStartTime) & round(obj.rawData.time) < round(eventEndTime) );
+                dataIdx = find( obj.rawData.time >= eventStartTime & obj.rawData.time < eventEndTime );
                 if ( isempty( dataIdx ) )
                     % already ahead event-time
                     if ( eventEndTime > obj.rawData.time( end ) )
@@ -66,26 +70,29 @@ classdef (Abstract) AbstractDataAndLabelMerger
                     end
                     continue;
                 end
-                
+
                 % filter data
-                eventWindowData = obj.filterData(obj.rawData.data(dataIdx, : ));
-                
+                eventWindowData = obj.filterData(obj.rawData.data(dataIdx, : ));                
                 if(isempty(eventWindowData))
                     continue;
                 end
                 
-                % add label index of event
-                eventName = obj.labeledEvents.names{ i };
-                eventNameIdx = findStrInCell( obj.selectedClasses, eventName );
-                if(isempty(eventNameIdx))
+                % interpolate (add/remove samples in window to match target
+                % samples per window given by samples frequency x windowTime
+                nextWindowsFirstSample = [];
+                if (size(obj.rawData.data,1)> dataIdx(end))
+                    nextWindowsFirstSample = obj.rawData.data(dataIdx(end)+1, :);
+                end
+                
+                eventWindowData = obj.interpolateSamples(eventWindowData, nextWindowsFirstSample);                
+                if(isempty(eventWindowData))
                     continue;
                 end
-                labels( i ) = eventNameIdx;
                 
+                % add data, time and labels
                 data(i,:) = obj.createFeatureVector(eventWindowData);
-                
-                % add time of event
                 time(i) = eventStartTime;
+                labels( i ) = eventNameIdx;
             end
             
             %remove empty entries (0 - value rows for data and labels and 0 - value columns for the time)
@@ -117,6 +124,7 @@ classdef (Abstract) AbstractDataAndLabelMerger
     methods(Abstract)
         featureVectorCount = getFeatureVectorCount(obj)
         filteredData = filterData(obj, eventWindowData)
+        eventWindowData = interpolateSamples(eventWindowData, nextWindowsFirstSample)
         featureVector = createFeatureVector(obj, eventWindowData)
     end
     
