@@ -1,10 +1,8 @@
-% Loads MSR datasets (from folder with person/patient data) and merges labeled events.
+% Common preprocessor of sensor(devices) datasets in person/patient folder.
+% Merges labeled events to data and interpolates data to the expected size
+% of samples in a window (device sampling frequency x event duration).
 %
-classdef MSRPreprocessor < Stage
-    
-    properties(Constant)
-        dataSource = 'MSR';
-    end
+classdef DataSetsPreprocessor < Stage
     
     methods
         % Constructor
@@ -18,7 +16,7 @@ classdef MSRPreprocessor < Stage
         %   samplingFrequency - the target sampling frequency (expect a positive integer)
         %   selectedClasses - the label classes to be considered
         %
-        function obj = MSRPreprocessor(propertySet)
+        function obj = DataSetsPreprocessor(propertySet)
             obj = obj@Stage(propertySet);
         end
         
@@ -34,7 +32,7 @@ classdef MSRPreprocessor < Stage
             for i = 1 : patientCount
                 dataSetFolderName = allPatientFolders( i ).name;
                 
-                LOG.trace('MSR', sprintf('Process dataset: %s\n', ['----' dataSetFolderName '----']));
+                LOG.trace(obj.props.dataSource, sprintf('Process dataset: %s\n', ['----' dataSetFolderName '----']));
                 
                 % parse labeled events
                 sleepPhaseParser = SleepPhaseEventParser([obj.props.basePath '\' dataSetFolderName '\1_raw\*.txt' ]);
@@ -46,25 +44,17 @@ classdef MSRPreprocessor < Stage
                 
                 for sensorIdx = 1 : sensorsCount
                     % parse raw data
-                    rawDataFile = [ obj.props.basePath '\' dataSetFolderName '\1_raw\' obj.dataSource '\' obj.props.sensorsRawDataFilePatterns{sensorIdx} ];
-                    reader = MSRMatlabReader(rawDataFile, obj.props.selectedRawDataChannels);
-                    rawData = reader.run();
+                    rawDataFile = [ obj.props.basePath '\' dataSetFolderName '\1_raw\' obj.props.dataSource '\' obj.props.sensorsRawDataFilePatterns{sensorIdx} ];
+                    rawData = obj.props.sensorDataReader.run(rawDataFile);
                     if(isempty(rawData))
-                        LOG.trace('MSR', 'No data found for sensor.');
+                        LOG.trace(obj.props.dataSource, 'No data found for sensor.');
                         continue;
                     end
-                    rawData.channelNames = obj.props.selectedRawDataChannels;
-                    
-%                     % linear interpolate/decimate values to fit target sampling frequency
-%                     LOG.trace('MSR', 'interpolate dataset');
-%                     interpolator = DiffSamplingRateInterpolation(obj.props.samplingFrequency, rawData);
-%                     interpolatedRawData = interpolator.run();
                     
                     % merge label and events
-                    LOG.trace('MSR', 'merge labels and data');
-                    merger = MSRRawDataAndLabelMerger(obj.props.samplingFrequency, labeledEvents, rawData, obj.props.mandatoryChannelsName, obj.props.selectedClasses, obj.props.assumedEventDuration);
-                    [ sensorData, sensorTime, sensorLabels, channelNames ] = merger.run();
-                    
+                    LOG.trace(obj.props.dataSource, 'merge labels and data');
+                    [ sensorData, sensorTime, sensorLabels, channelNames ] = obj.props.dataAndLabelMerger.run(labeledEvents, rawData);
+
                     sensors{sensorIdx} = struct('time', sensorTime, 'labels', sensorLabels, 'data', sensorData);
                 end
                 
@@ -93,11 +83,11 @@ classdef MSRPreprocessor < Stage
         function validateInput(obj)
             obj.validateField(obj.props, 'rawDataSetsFolderPattern', @ischar);
             obj.validateField(obj.props, 'sensorsRawDataFilePatterns', @iscellstr);
-            obj.validateField(obj.props, 'selectedRawDataChannels', @iscellstr);
-            obj.validateField(obj.props, 'mandatoryChannelsName', @iscellstr);
+%             obj.validateField(obj.props, 'selectedRawDataChannels', @iscellstr);
+%             obj.validateField(obj.props, 'mandatoryChannelsName', @iscellstr);
 %             obj.validateField(obj.props, 'samplingFrequency', @isPositiveInteger);
-            obj.validateField(obj.props, 'selectedClasses', @iscellstr);
-            obj.validateField(obj.props, 'assumedEventDuration', @isPositiveInteger);
+%             obj.validateField(obj.props, 'selectedClasses', @iscellstr);
+%             obj.validateField(obj.props, 'assumedEventDuration', @isPositiveInteger);
         end
         
         function validateOutput(obj)

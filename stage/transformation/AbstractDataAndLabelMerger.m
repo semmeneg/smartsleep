@@ -4,10 +4,10 @@
 classdef (Abstract) AbstractDataAndLabelMerger
     properties
         samplingFrequency = [];
-        labeledEvents = [];
-        rawData = [];
         mandatoryChannelsName = [];
         selectedClasses = [];
+        assumedEventDuration = [];
+        samplesPerEvent = [];
     end
     
     methods
@@ -15,16 +15,15 @@ classdef (Abstract) AbstractDataAndLabelMerger
         %% Constructor
         %
         % param samplingFrequency is the sensors data recording frequence Hz (means how many samples per second and channels the sensor delivers)
-        % param labeledEvents is a struct with 'time', 'durations', 'names'
-        % param rawData is a struct with 'time', 'data', 'channelNames'
         % param mandatoryChannelsName array of channels not expected to be empty (0). Skips whole data vector if one of this channels is null.
         % param selectedClasses lists the considered event classes(labels). The others shall be skipped.
-        function obj = AbstractDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses)
+        % param assumedEventDuration defines the time window resp. durations of labeled events which shall be considered
+        function obj = AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration)
             obj.samplingFrequency = samplingFrequency;
-            obj.labeledEvents = labeledEvents;
-            obj.rawData = rawData;
             obj.mandatoryChannelsName = mandatoryChannelsName;
             obj.selectedClasses = selectedClasses;
+            obj.assumedEventDuration = assumedEventDuration;
+            obj.samplesPerEvent = ceil(obj.samplingFrequency * obj.assumedEventDuration); %rounded up
             
             obj.validateInput();
         end
@@ -32,28 +31,32 @@ classdef (Abstract) AbstractDataAndLabelMerger
         %% Extracts for each labeled event and its time frame (time
         % window) the raw data of the selected channels and creates a single raw
         % data vector for each event.
-        function [ data, time, labels, channelNames ] = run(obj)
+        %
+        % param labeledEvents is a struct with 'time', 'durations', 'names'
+        % param rawData is a struct with 'time', 'data', 'channelNames'        
+        function [ data, time, labels, channelNames ] = run(obj, labeledEvents, rawData)
             
             Log.getLogger().infoStart(class(obj), 'run');
             
-            channelNames = obj.rawData.channelNames;
-            eventCount = length( obj.labeledEvents.time );
+            channelNames = rawData.channelNames;
+            eventCount = length( labeledEvents.time );
             
-            data = zeros( eventCount, obj.getFeatureVectorCount());
+            componentsCount = obj.samplesPerEvent * length(rawData.channelNames);
+            data = zeros( eventCount, componentsCount);
             time = zeros( eventCount, 1 );
             labels = zeros( eventCount, 1 );
             
             for i = 1 : eventCount
                 
                 % consider only defined classes
-                eventName = obj.labeledEvents.names{ i };
+                eventName = labeledEvents.names{ i };
                 eventNameIdx = findStrInCell( obj.selectedClasses, eventName );
                 if(isempty(eventNameIdx))
                     continue;
                 end
                                 
-                eventStartTime = obj.labeledEvents.time( i );
-                eventDuration = obj.labeledEvents.durations( i );
+                eventStartTime = labeledEvents.time( i );
+                eventDuration = labeledEvents.durations( i );
                 eventEndTime = eventStartTime + eventDuration;
                 
                 if(isfield(obj, 'assumedEventDuration') && ~isempty(obj.assumedEventDuration))
@@ -62,17 +65,17 @@ classdef (Abstract) AbstractDataAndLabelMerger
                     end
                 end
                 
-                dataIdx = find( obj.rawData.time >= eventStartTime & obj.rawData.time < eventEndTime );
+                dataIdx = find( rawData.time >= eventStartTime & rawData.time < eventEndTime );
                 if ( isempty( dataIdx ) )
                     % already ahead event-time
-                    if ( eventEndTime > obj.rawData.time( end ) )
+                    if ( eventEndTime > rawData.time( end ) )
                         break;
                     end
                     continue;
                 end
 
                 % filter data
-                eventWindowData = obj.filterData(obj.rawData.data(dataIdx, : ));                
+                eventWindowData = obj.filterData(rawData.data(dataIdx, : ));                
                 if(isempty(eventWindowData))
                     continue;
                 end
@@ -80,8 +83,8 @@ classdef (Abstract) AbstractDataAndLabelMerger
                 % interpolate (add/remove samples in window to match target
                 % samples per window given by samples frequency x windowTime
                 nextWindowsFirstSample = [];
-                if (size(obj.rawData.data,1)> dataIdx(end))
-                    nextWindowsFirstSample = obj.rawData.data(dataIdx(end)+1, :);
+                if (size(rawData.data,1)> dataIdx(end))
+                    nextWindowsFirstSample = rawData.data(dataIdx(end)+1, :);
                 end
                 
                 eventWindowData = obj.interpolateSamples(eventWindowData, nextWindowsFirstSample);                
@@ -104,13 +107,13 @@ classdef (Abstract) AbstractDataAndLabelMerger
         end
         
         function validateInput(obj)
-            obj.validateField(obj.labeledEvents, 'time', @isnumeric);
-            obj.validateField(obj.labeledEvents, 'durations', @isnumeric);
-            obj.validateField(obj.labeledEvents, 'names', @iscellstr);
-            
-            obj.validateField(obj.rawData, 'time', @isnumeric);
-            obj.validateField(obj.rawData, 'data', @isnumeric);
-            obj.validateField(obj.rawData, 'channelNames', @iscellstr);
+%             obj.validateField(labeledEvents, 'time', @isnumeric);
+%             obj.validateField(labeledEvents, 'durations', @isnumeric);
+%             obj.validateField(labeledEvents, 'names', @iscellstr);
+%             
+%             obj.validateField(rawData, 'time', @isnumeric);
+%             obj.validateField(rawData, 'data', @isnumeric);
+%             obj.validateField(rawData, 'channelNames', @iscellstr);
             
             obj.validateCellArray(obj.selectedClasses, @iscellstr);
             
@@ -122,7 +125,6 @@ classdef (Abstract) AbstractDataAndLabelMerger
     end
     
     methods(Abstract)
-        featureVectorCount = getFeatureVectorCount(obj)
         filteredData = filterData(obj, eventWindowData)
         eventWindowData = interpolateSamples(eventWindowData, nextWindowsFirstSample)
         featureVector = createFeatureVector(obj, eventWindowData)

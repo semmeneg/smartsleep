@@ -1,47 +1,46 @@
 % Reads and parses Zephyr raw data from CSV file.
 %
-classdef ZephyrCsvReader
+classdef ZephyrCsvReader < AbstractSensorDataReader
     
     properties(Constant)
         TIMEFORMAT = 'dd/mm/yyyy HH:MM:SS.FFF';
     end
     
-    properties
-        fileNameAndPath = [];
-        selectedChannels = [];
-    end
-    
     methods
-        function obj = ZephyrCsvReader(fileNameAndPath, selectedChannels)
-            obj.fileNameAndPath = fileNameAndPath;
-            obj.selectedChannels = selectedChannels;
+        function obj = ZephyrCsvReader(selectedChannels)
+           obj = obj@AbstractSensorDataReader(selectedChannels);
         end
         
-        function [ zephyr ] = run(obj)
+         %%
+        % Reads data and timestamps. Returns a strcut with a 'time' array, a 'data' matrix and the 'selectedChannels' array.
+        % Concrete readers must implement this method.
+        %
+        % param fileNameAndPath        
+        function [ dataSet ] = run(obj, fileNameAndPath)
             
-            zephyr = [];
+            dataSet = [];
             
-            if (contains(obj.fileNameAndPath, '*'))
-                file = dir(obj.fileNameAndPath);
+            if (contains(fileNameAndPath, '*'))
+                file = dir(fileNameAndPath);
                 if ( isempty( file ) )
-                    warning( 'Zephyr CSV file:missing', 'Missing Zephyr data file in %s', obj.fileNameAndPath );
+                    warning( 'Zephyr CSV file:missing', 'Missing Zephyr data file in %s', fileNameAndPath );
                     return;
                 end
-                obj.fileNameAndPath = [ file.folder '\' file.name ];
+                fileNameAndPath = [ file.folder '\' file.name ];
             end
                 
-            t = readtable( obj.fileNameAndPath);
+            t = readtable( fileNameAndPath);
             
             tableSize = size( t, 1 );
             time = t( :, 'Time' );
             timeStrs = table2cell( time );
             
-            zephyr.data = table2array( t( :, obj.selectedChannels ) );
-            zephyr.data = str2double(zephyr.data);
-            zephyr.time = zeros( tableSize, 1 );
+            dataSet.data = table2array( t( :, obj.selectedChannels ) );
+            dataSet.data = str2double(dataSet.data);
+            dataSet.time = zeros( tableSize, 1 );
             
             for i = 1 : tableSize
-                zephyr.time( i ) = obj.matlabTimeToUnixTime( datenum( timeStrs{ i }, obj.TIMEFORMAT ) );
+                dataSet.time( i ) = obj.matlabTimeToUnixTime( datenum( timeStrs{ i }, obj.TIMEFORMAT ) );
             end
         end
         

@@ -44,6 +44,10 @@ classdef RBMFeaturesTrainer
             dataSet.valueType = ValueType.gaussian;
             dataSet.trainData = obj.rawData.data;
             dataSet.trainLabels = obj.rawData.labels;
+            if(~isempty(obj.rawData.validationData))
+                dataSet.validationData = obj.rawData.validationData;
+                dataSet.validationLabels = obj.rawData.validationLabels;
+            end
             
             dataSet.shuffle();
                         

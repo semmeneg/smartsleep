@@ -13,8 +13,8 @@ classdef MSRMatlabReaderTest < matlab.unittest.TestCase
         %% Tests reading from csv file.
         function testMSRMatlabReader(testCase, file, selectedChannels) 
             warning ( 'off', 'all' );
-            reader = MSRMatlabReader(file, selectedChannels);
-            dataSet = reader.run();
+            reader = MSRMatlabReader(selectedChannels);
+            dataSet = reader.run(file);
             testCase.assertNotEmpty(dataSet);
             testCase.assertNotEmpty(dataSet.time);
             testCase.assertGreaterThan(length(dataSet.time), 1);

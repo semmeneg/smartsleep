@@ -1,31 +1,31 @@
 % Reads MSR raw data from a matlab file format.
-classdef MSRMatlabReader
-    
-    properties
-        fileNameAndPath = [];
-        selectedChannels = [];
-    end
+classdef MSRMatlabReader < AbstractSensorDataReader
     
     methods
-        function obj = MSRMatlabReader(fileNameAndPath, selectedChannels)
-            obj.fileNameAndPath = fileNameAndPath;
-            obj.selectedChannels = selectedChannels;
+        function obj = MSRMatlabReader(selectedChannels)
+            obj = obj@AbstractSensorDataReader(selectedChannels);
         end
         
-        function [ dataSet ] = run(obj)
+
+        %%
+        % Reads data and timestamps. Returns a strcut with a 'time' array, a 'data' matrix and the 'selectedChannels' array.
+        % Concrete readers must implement this method.
+        %
+        % param fileNameAndPath          
+        function [ dataSet ] = run(obj, fileNameAndPath)
             
             dataSet = [];
             
-            if (contains(obj.fileNameAndPath, '*'))
-                file = dir(obj.fileNameAndPath);
+            if (contains(fileNameAndPath, '*'))
+                file = dir(fileNameAndPath);
                 if ( isempty( file ) )
-                    warning( 'MSR file:missing', 'Missing MSR data file in %s', obj.fileNameAndPath );
+                    warning( 'MSR file:missing', 'Missing MSR data file in %s', fileNameAndPath );
                     return;
                 end
-                obj.fileNameAndPath = [ file.folder '\' file.name ];
+                fileNameAndPath = [ file.folder '\' file.name ];
             end
             
-            load( obj.fileNameAndPath );
+            load( fileNameAndPath );
             
             timeChannelIndex = 0;
                

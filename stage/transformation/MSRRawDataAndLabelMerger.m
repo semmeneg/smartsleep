@@ -10,13 +10,11 @@ classdef MSRRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
         %% Constructor
         %
         % param samplingFrequency is the sensors data recording frequence Hz (means how many samples per second and channels the sensor delivers)
-        % param labeledEvents is a struct with 'time', 'durations', 'names'
-        % param rawData is a struct with 'time', 'data', 'channelNames'
         % param mandatoryChannelsName array of channels not expected to be empty (0), otherwise the whole data vector is skipped.
         % param selectedClasses lists the considered event classes(labels). The others shall be skipped.
         % param assumedEventDuration defines the time window resp. durations of labeled events which shall be considered
-        function obj = MSRRawDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses, assumedEventDuration)
-            obj = obj@DefaultRawDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses, assumedEventDuration);
+        function obj = MSRRawDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration)
+            obj = obj@DefaultRawDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration);
         end
         
         %% Skips event data if less as half of the samples have 0
@@ -45,7 +43,7 @@ classdef MSRRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
             interpolatedData = [];
             samplesCount = size(eventWindowData,1);
             
-            if(samplesCount == obj.samplesPerChannel)
+            if(samplesCount == obj.samplesPerEvent)
                 interpolatedData = eventWindowData;
                 return; %nothing to interpolate/decimate
             end
@@ -55,15 +53,15 @@ classdef MSRRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
             end
             
             % decimate
-            if(samplesCount > obj.samplesPerChannel) % skip last samples
-                delta = samplesCount - obj.samplesPerChannel;
+            if(samplesCount > obj.samplesPerEvent) % skip last samples
+                delta = samplesCount - obj.samplesPerEvent;
                 interpolatedData = eventWindowData(1:end-delta,:);
                 return;
             end
             
             %interpolate
             lastAndNextSampleVector = [eventWindowData(end,:);nextWindowsFirstSample];
-            missingSamples = obj.samplesPerChannel - samplesCount;
+            missingSamples = obj.samplesPerEvent - samplesCount;
             stepSize = 1/(missingSamples+1);
             interpolatedDataBlock = interp1(1:2, lastAndNextSampleVector, 1:stepSize:2);
             interpolatedNewData = interpolatedDataBlock(2:end-1,:);

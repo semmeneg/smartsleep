@@ -1,7 +1,9 @@
-% DefaultRawDataAndLabelMerger is a base class for merging raw sensor data with labeled
+% Merges raw sensor data with labeled
 % events which each cover a duration (time window).
+% The filter for this sensor skips event data if less as half of the samples have 0
+% values on each channel. 
 
-classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
+classdef BiovotionRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
     
     methods
         
@@ -11,28 +13,22 @@ classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
         % param mandatoryChannelsName array of channels not expected to be empty (0), otherwise the whole data vector is skipped.
         % param selectedClasses lists the considered event classes(labels). The others shall be skipped.
         % param assumedEventDuration defines the time window resp. durations of labeled events which shall be considered
-        function obj = DefaultRawDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration)
-            obj = obj@AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration);
+        function obj = BiovotionRawDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration)
+            obj = obj@DefaultRawDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration);
         end
         
-        %% Skip the labeled event window if the expected set of
-        % matching raw data is not fully available (ex. at the beginning or if mandatory channels are "0").
+        %% Skips event data if less as half of the samples have 0
+        % values on each channel. 
         function filterdData = filterData(obj, eventWindowData)
             
                 filterdData = eventWindowData;
                             
-                % skip event if one value of required channels value is 0
-                for channel = obj.mandatoryChannelsName
-                    channelId = strmatch(channel, obj.rawData.channelNames, 'exact');
-                    if( sum(~any(eventWindowData(:,channelId),2)) > 0)
-                        filterdData = [];
-                        return;
-                    end
-                end
+                % skip sample if all channels are 0
+               filterdData( ~any(filterdData,2), : ) = [];
                 
                 %skip event if less than half of the expected samples per
                 %window are available.
-                if(size(eventWindowData,1) < (obj.samplingFrequency * obj.assumedEventDuration)/2)
+                if(size(filterdData,1) < (obj.samplingFrequency * obj.assumedEventDuration)/2)
                     filterdData = [];
                 end
         end
@@ -47,7 +43,7 @@ classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
             interpolatedData = [];
             samplesCount = size(eventWindowData,1);
             
-            if(samplesCount == obj.samplesPerChannel)
+            if(samplesCount == obj.samplesPerEvent)
                 interpolatedData = eventWindowData;
                 return; %nothing to interpolate/decimate
             end
@@ -57,15 +53,15 @@ classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
             end
             
             % decimate
-            if(samplesCount > obj.samplesPerChannel) % skip last samples
-                delta = samplesCount - obj.samplesPerChannel;
+            if(samplesCount > obj.samplesPerEvent) % skip last samples
+                delta = samplesCount - obj.samplesPerEvent;
                 interpolatedData = eventWindowData(1:end-delta,:);
                 return;
             end
             
             %interpolate
             lastAndNextSampleVector = [eventWindowData(end,:);nextWindowsFirstSample];
-            missingSamples = obj.samplesPerChannel - samplesCount;
+            missingSamples = obj.samplesPerEvent - samplesCount;
             stepSize = 1/(missingSamples+1);
             interpolatedDataBlock = interp1(1:2, lastAndNextSampleVector, 1:stepSize:2);
             interpolatedNewData = interpolatedDataBlock(2:end-1,:);

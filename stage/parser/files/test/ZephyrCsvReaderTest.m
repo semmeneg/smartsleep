@@ -17,8 +17,8 @@ classdef ZephyrCsvReaderTest < matlab.unittest.TestCase
         %% Tests reading from csv file.
         function testZephyrCsvReader(testCase, csvFile, selectedChannels) 
             warning ( 'off', 'all' );
-            zephyrCsvReader = ZephyrCsvReader(csvFile, selectedChannels);
-            zephyr = zephyrCsvReader.run();
+            zephyrCsvReader = ZephyrCsvReader(selectedChannels);
+            zephyr = zephyrCsvReader.run(csvFile);
             testCase.assertNotEmpty(zephyr);
             testCase.assertTrue(sum(isnan(zephyr.time)) == 0);
             testCase.assertTrue(sum(sum(isnan(zephyr.data))) == 0);
