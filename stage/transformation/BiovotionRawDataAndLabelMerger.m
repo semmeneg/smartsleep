@@ -64,7 +64,14 @@ classdef BiovotionRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
             missingSamples = obj.samplesPerEvent - samplesCount;
             stepSize = 1/(missingSamples+1);
             interpolatedDataBlock = interp1(1:2, lastAndNextSampleVector, 1:stepSize:2);
-            interpolatedNewData = interpolatedDataBlock(2:end-1,:);
+            
+            %in case of only one value (column) the array orientation must
+            %be switched after interpolation (Matlab magic)
+            if(size(eventWindowData,2) == 1)
+                interpolatedNewData = interpolatedDataBlock(:, 2:end-1)';
+            else
+                interpolatedNewData = interpolatedDataBlock(2:end-1,:);
+            end
             interpolatedData = [ eventWindowData ; interpolatedNewData ];
         end
         

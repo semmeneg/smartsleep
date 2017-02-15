@@ -1,4 +1,4 @@
-% BiovotionCsvReaderTest
+% UtilTests
 %
 % Tests biovotion raw data reader on CSV file.
 %

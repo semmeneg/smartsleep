@@ -62,7 +62,7 @@ higherOrderFeaturesDBN = rbmTrainer.run();
 
 % Save DBN trained model
 dataSource = strjoin(dataSources, '_');
-dbnLearnedModelFolder = [ BASE_PATH '\processed\' CONF.DBN_DATA_SUBFOLDER '\'  processingOutputFolder];
+dbnLearnedModelFolder = [ BASE_PATH '\_processed\' CONF.DBN_DATA_SUBFOLDER '\'  processingOutputFolder];
 [s, mess, messid] = mkdir(dbnLearnedModelFolder);
 dbnLearnedModelFile = [dbnLearnedModelFolder '\dbn_trainedModel_' dataSource '.mat'];
 dbn = rbmTrainer.getDBN();

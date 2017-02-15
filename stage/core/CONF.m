@@ -3,7 +3,9 @@ classdef CONF
     %   
     
     properties(Constant)
-        BASE_DATA_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\SmartSleepPatienten\';
+        BASE_PATH = 'C:\Data\Projects\SmartSleep\SmartSleep Data\Barmelweid\';
+        BASE_DATA_PATH = [CONF.BASE_PATH 'RawData\'];
+        BASE_OUTPUT_PATH = [CONF.BASE_PATH 'Processed\'];
 
         WEKA_PATH = 'C:\Program Files\Weka-3-8';
                 

@@ -8,7 +8,7 @@ classdef DataSetsPreprocessor < Stage
         % Constructor
         %
         % properties - a struct array with named values:
-        %   rawDataSetsFolderPattern - the folder path and name pattern containing the datasets(person/patients)
+        %   sourceDataDirectoriesPatterns - single or list of folder path and name pattern containing the datasets(person/patients)
         %   basePath - the datasets base path
         %   sensorsRawDataFilePatterns - sensors data file patterns
         %   selectedRawDataChannels - names list of the channels in the sensors data files
@@ -23,20 +23,22 @@ classdef DataSetsPreprocessor < Stage
         function dataSets = run(obj)
             LOG = Log.getLogger();
             LOG.infoStart(class(obj), 'run');
-            
-            files = dir( obj.props.rawDataSetsFolderPattern );
-            allPatientFolders = files( [ files.isdir ] );
-            patientCount = length( allPatientFolders );
             dataSets = [];
             
-            for i = 1 : patientCount
-                dataSetFolderName = allPatientFolders( i ).name;
+            for sourceDataFolderIdx = 1 : length(obj.props.sourceDataFolders)
+                
+                sourceDataFolder = obj.props.sourceDataFolders(sourceDataFolderIdx);
+                dataSetFolderName = sourceDataFolder.name;
+                rawDataPath = [sourceDataFolder.folder '\' dataSetFolderName '\1_raw\'];
                 
                 LOG.trace(obj.props.dataSource, sprintf('Process dataset: %s\n', ['----' dataSetFolderName '----']));
                 
                 % parse labeled events
-                sleepPhaseParser = SleepPhaseEventParser([obj.props.basePath '\' dataSetFolderName '\1_raw\*.txt' ]);
+                sleepPhaseParser = SleepPhaseEventParser([rawDataPath '*.txt' ]);
                 labeledEvents = sleepPhaseParser.run();
+                if(isempty(labeledEvents))
+                    continue;
+                end
                 
                 % process all sensors
                 sensorsCount = length(obj.props.sensorsRawDataFilePatterns);
@@ -44,9 +46,9 @@ classdef DataSetsPreprocessor < Stage
                 
                 for sensorIdx = 1 : sensorsCount
                     % parse raw data
-                    rawDataFile = [ obj.props.basePath '\' dataSetFolderName '\1_raw\' obj.props.dataSource '\' obj.props.sensorsRawDataFilePatterns{sensorIdx} ];
+                    rawDataFile = [ rawDataPath obj.props.dataSource '\' obj.props.sensorsRawDataFilePatterns{sensorIdx} ];
                     rawData = obj.props.sensorDataReader.run(rawDataFile);
-                    if(isempty(rawData))
+                    if(isempty(rawData.data))
                         LOG.trace(obj.props.dataSource, 'No data found for sensor.');
                         continue;
                     end
@@ -54,7 +56,7 @@ classdef DataSetsPreprocessor < Stage
                     % merge label and events
                     LOG.trace(obj.props.dataSource, 'merge labels and data');
                     [ sensorData, sensorTime, sensorLabels, channelNames ] = obj.props.dataAndLabelMerger.run(labeledEvents, rawData);
-
+                    
                     sensors{sensorIdx} = struct('time', sensorTime, 'labels', sensorLabels, 'data', sensorData);
                 end
                 
@@ -67,7 +69,10 @@ classdef DataSetsPreprocessor < Stage
                 sensorDataMerger = TimedDataIntersection(sensors);
                 [dataSetTime, dataSetLabels, dataSetData ] = sensorDataMerger.run();
                 
+                obj.logClassDistributions(dataSetFolderName, labeledEvents, dataSetTime, dataSetLabels);
+                
                 if(~isempty(dataSetTime))
+                    
                     dataSets{end+1}.name = dataSetFolderName;
                     dataSets{end}.time = dataSetTime;
                     dataSets{end}.labels = dataSetLabels;
@@ -81,16 +86,33 @@ classdef DataSetsPreprocessor < Stage
     
     methods(Access = protected)
         function validateInput(obj)
-            obj.validateField(obj.props, 'rawDataSetsFolderPattern', @ischar);
+            %             obj.validateField(obj.props, 'rawDataSetsFolderPattern', @ischar);
             obj.validateField(obj.props, 'sensorsRawDataFilePatterns', @iscellstr);
-%             obj.validateField(obj.props, 'selectedRawDataChannels', @iscellstr);
-%             obj.validateField(obj.props, 'mandatoryChannelsName', @iscellstr);
-%             obj.validateField(obj.props, 'samplingFrequency', @isPositiveInteger);
-%             obj.validateField(obj.props, 'selectedClasses', @iscellstr);
-%             obj.validateField(obj.props, 'assumedEventDuration', @isPositiveInteger);
+            %             obj.validateField(obj.props, 'selectedRawDataChannels', @iscellstr);
+            %             obj.validateField(obj.props, 'mandatoryChannelsName', @iscellstr);
+            %             obj.validateField(obj.props, 'samplingFrequency', @isPositiveInteger);
+            %             obj.validateField(obj.props, 'selectedClasses', @iscellstr);
+            %             obj.validateField(obj.props, 'assumedEventDuration', @isPositiveInteger);
         end
         
         function validateOutput(obj)
+            
+        end
+    end
+    
+    methods(Access = private)
+        function logClassDistributions(obj, dataSetFolderName, labeledEvents, dataSetTime, dataSetLabels)
+            labeledStartTime = datestr(unixTimeToMatlabTime(labeledEvents.time(1)));
+            labeledEndTime = datestr(unixTimeToMatlabTime(labeledEvents.time(end)));
+            labeledClassCounts = cellfun(@(class)sum(count(labeledEvents.names, class)), obj.props.selectedClasses);
+            
+            dataStartTime = datestr(unixTimeToMatlabTime(dataSetTime(1)));
+            dataEndTime = datestr(unixTimeToMatlabTime(dataSetTime(end)));
+            dataClassCounts = arrayfun(@(classNumber)length(find(dataSetLabels == classNumber)), 1:length(obj.props.selectedClasses));
+
+            LOG = SetupLog([obj.props.outputFolder 'classDistributions.log'], 'a');
+            LOG.log(sprintf('Folder, Start(event), End(event), %s, Total(event), Start(data), End(data), %s, Total(data)\n', strjoin(obj.props.selectedClasses, '(data), '), strjoin(obj.props.selectedClasses, '(event), ')));
+            LOG.log(sprintf('%s, %s, %s, %s %d, %s, %s, %s %d\n', dataSetFolderName, labeledStartTime, labeledEndTime, num2str(labeledClassCounts, '%d, '), sum(labeledClassCounts), dataStartTime, dataEndTime, num2str(dataClassCounts, '%d, '), sum(dataClassCounts)));
             
         end
     end

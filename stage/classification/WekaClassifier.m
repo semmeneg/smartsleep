@@ -35,9 +35,9 @@ classdef WekaClassifier
             [status,message,messageid] = mkdir(obj.resultFolderPath);
             
             % Weka output: trained modelfile
-            modelFile = [obj.resultFolderPath '\'  obj.trainedModelFileName];
+            modelFile = [obj.resultFolderPath obj.trainedModelFileName];
             
-            textResultsFile = [obj.resultFolderPath '\'  obj.textResultFileName];
+            textResultsFile = [obj.resultFolderPath obj.textResultFileName];
             
             tStart = tic;
             fprintf('Start Weka classification training: %s.\n', datetime);
@@ -63,7 +63,7 @@ classdef WekaClassifier
             
             %append results to csv file
             if(~isempty(obj.csvResultFileName))
-                csvFile = [obj.resultFolderPath '\' 'cm.csv'];
+                csvFile = [obj.resultFolderPath 'cm.csv'];
                 obj.appendWekaResult2Csv(textResultsFile, csvFile, obj.description);
             end
             

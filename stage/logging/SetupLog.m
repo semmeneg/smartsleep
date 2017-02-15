@@ -6,10 +6,13 @@ classdef SetupLog
     end
     
     methods
-        function obj = SetupLog( logPath )
+        function obj = SetupLog( logPath, permission )
             obj.logPath = logPath;
+            if(nargin == 0)
+                permission = 'w';
+            end
             try
-                fid = fopen(obj.logPath,'w');
+                fid = fopen(obj.logPath, permission);
                 fprintf(fid,'%s\r\n', datestr(now,'yyyy-mm-dd HH:MM:SS,FFF'));
                 fclose(fid);
             catch ME_1
