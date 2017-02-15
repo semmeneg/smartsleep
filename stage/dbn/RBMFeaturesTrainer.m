@@ -10,6 +10,7 @@ classdef RBMFeaturesTrainer
     properties
         rawData = [];
         dbn;
+        backpropagation = false;
     end
     
     methods
@@ -17,7 +18,8 @@ classdef RBMFeaturesTrainer
         %
         % param layersConfig is expected to be an array of hiddenLayer configurations (structs with 'hiddenUnitsCount', 'maxEpochs')
         % param rawData is a struct with 'labels', 'data', 'channelNames' (optional)
-        function obj = RBMFeaturesTrainer(layersConfig, rawData)
+        % param backpropagation (boolean), enable backpropagation in case of validatoin data provided.
+        function obj = RBMFeaturesTrainer(layersConfig, rawData, backpropagation)
 
             % Init DBN
             obj.dbn = DBN( 'classifier' );
@@ -31,6 +33,10 @@ classdef RBMFeaturesTrainer
             end
             
             obj.rawData = rawData;
+            
+            if(nargin > 2)
+                obj.backpropagation = backpropagation;
+            end
         end
         
         % Returns a features struct with data and labels
@@ -56,6 +62,14 @@ classdef RBMFeaturesTrainer
             fprintf('Start DBN training: %s.\n', datetime);
             obj.dbn.train( dataSet );
             fprintf('DBN train time used: %f seconds.\n', toc(tStart));
+            
+            %backpropagation
+            if(obj.backpropagation)
+                tStart = tic;
+                fprintf('Start DBN backpropagation: %s.\n', datetime);
+                obj.dbn.backpropagation( dataSet );
+                fprintf('DBN backpropagation time used: %f seconds.\n', toc(tStart));
+            end
             
             resultSet.features = obj.dbn.getFeature( obj.rawData.data );
             
