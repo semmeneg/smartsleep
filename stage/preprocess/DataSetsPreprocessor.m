@@ -48,7 +48,7 @@ classdef DataSetsPreprocessor < Stage
                     % parse raw data
                     rawDataFile = [ rawDataPath obj.props.dataSource '\' obj.props.sensorsRawDataFilePatterns{sensorIdx} ];
                     rawData = obj.props.sensorDataReader.run(rawDataFile);
-                    if(isempty(rawData.data))
+                    if(isempty(rawData) || isempty(rawData.data))
                         LOG.trace(obj.props.dataSource, 'No data found for sensor.');
                         continue;
                     end
@@ -106,10 +106,15 @@ classdef DataSetsPreprocessor < Stage
             labeledEndTime = datestr(unixTimeToMatlabTime(labeledEvents.time(end)));
             labeledClassCounts = cellfun(@(class)sum(count(labeledEvents.names, class)), obj.props.selectedClasses);
             
-            dataStartTime = datestr(unixTimeToMatlabTime(dataSetTime(1)));
-            dataEndTime = datestr(unixTimeToMatlabTime(dataSetTime(end)));
-            dataClassCounts = arrayfun(@(classNumber)length(find(dataSetLabels == classNumber)), 1:length(obj.props.selectedClasses));
-
+            dataStartTime = [];
+            dataEndTime = [];
+            dataClassCounts = [];
+            if(~isempty(dataSetTime))
+                dataStartTime = datestr(unixTimeToMatlabTime(dataSetTime(1)));
+                dataEndTime = datestr(unixTimeToMatlabTime(dataSetTime(end)));
+                dataClassCounts = arrayfun(@(classNumber)length(find(dataSetLabels == classNumber)), 1:length(obj.props.selectedClasses));
+            end
+            
             LOG = SetupLog([obj.props.outputFolder 'classDistributions.log'], 'a');
             LOG.log(sprintf('Folder, Start(event), End(event), %s, Total(event), Start(data), End(data), %s, Total(data)\n', strjoin(obj.props.selectedClasses, '(data), '), strjoin(obj.props.selectedClasses, '(event), ')));
             LOG.log(sprintf('%s, %s, %s, %s %d, %s, %s, %s %d\n', dataSetFolderName, labeledStartTime, labeledEndTime, num2str(labeledClassCounts, '%d, '), sum(labeledClassCounts), dataStartTime, dataEndTime, num2str(dataClassCounts, '%d, '), sum(dataClassCounts)));
