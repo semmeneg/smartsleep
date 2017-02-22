@@ -1,5 +1,4 @@
-% Merges dat
-% a sets with same name based on the timestamps. Expect datasets with equal timestamps.
+% Merges data sets with same name based on the timestamps. Expect datasets with equal timestamps.
 % If timestamps do not match, the data is skiped.
 %
 classdef NamedDataSetsIntersection

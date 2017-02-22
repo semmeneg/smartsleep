@@ -2,7 +2,7 @@
 %
 % Tests the utils functions.
 %
-classdef UtilsTest < matlab.unittest.TestCase
+classdef UtilTest < matlab.unittest.TestCase
     
     properties (TestParameter)
         sourceFolderPatterns = {{[CONF.BASE_DATA_PATH 'UnitTest\utils\2016_10-11_Patients\P*' ], [CONF.BASE_DATA_PATH 'UnitTest\utils\2016_12_Patients\P*']}};

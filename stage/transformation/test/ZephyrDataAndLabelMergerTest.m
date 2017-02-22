@@ -34,8 +34,8 @@ classdef ZephyrDataAndLabelMergerTest < matlab.unittest.TestCase
     methods(TestMethodSetup)
         function setup(testCase, rawDataFile)
             warning ( 'off', 'all' );
-            zephyrCsvReader = ZephyrCsvReader(rawDataFile, testCase.selectedChannels);
-            testCase.rawData = zephyrCsvReader.run();
+            zephyrCsvReader = ZephyrCsvReader(testCase.selectedChannels);
+            testCase.rawData = zephyrCsvReader.run(rawDataFile);
             testCase.rawData.channelNames = testCase.selectedChannels;
         end
     end
@@ -46,8 +46,8 @@ classdef ZephyrDataAndLabelMergerTest < matlab.unittest.TestCase
         %% Tests merge of raw data to labeled events
         function testZephyrRawDataAndLabelMerger(testCase, labeledEvents, mandatoryChannelsName, selectedClasses, assumedEventDuration)
             
-            merger = ZephyrRawDataAndLabelMerger(labeledEvents, testCase.rawData, mandatoryChannelsName, selectedClasses, assumedEventDuration);
-            [ data, time, labels, channelNames ] = merger.run();
+            merger = ZephyrRawDataAndLabelMerger(mandatoryChannelsName, selectedClasses, assumedEventDuration);
+            [ data, time, labels, channelNames ] = merger.run(labeledEvents, testCase.rawData);
             testCase.assertNotEmpty(data);
             testCase.assertEqual(size(data,1), 12);
             testCase.assertEqual(size(time,1), 12);
@@ -57,10 +57,10 @@ classdef ZephyrDataAndLabelMergerTest < matlab.unittest.TestCase
         end
         
         %% Tests merge of calculated features to labeled events
-        function testZephyrAggregatedDataAndLabelMerger(testCase, labeledEvents, mandatoryChannelsName, selectedClasses, aggregationFunctions)
+        function testZephyrAggregatedDataAndLabelMerger(testCase, labeledEvents, mandatoryChannelsName, selectedClasses, aggregationFunctions, assumedEventDuration)
             
-            merger = ZephyrAggregatedDataAndLabelMerger(labeledEvents, testCase.rawData, mandatoryChannelsName, selectedClasses, aggregationFunctions);
-            [ data, time, labels, channelNames ] = merger.run();
+            merger = DefaultAggregatedDataAndLabelMerger(1, mandatoryChannelsName, selectedClasses, aggregationFunctions, assumedEventDuration);
+            [ data, time, labels, channelNames ] = merger.run(labeledEvents, testCase.rawData);
             testCase.assertNotEmpty(data);
             testCase.assertEqual(size(data,1), 12);
             testCase.assertEqual(size(time,1), 12);

@@ -14,13 +14,12 @@ classdef DefaultAggregatedDataAndLabelMerger < AbstractDataAndLabelMerger
         %% Constructor
         %
         % param samplingFrequency is the sensors data recording frequence Hz (means how many samples per second and channels the sensor delivers)
-        % param labeledEvents is a struct with 'time', 'durations', 'names'
-        % param rawData is a struct with 'time', 'data', 'channelNames'
         % param mandatoryChannelsName array of channels not expected to be empty (0), otherwise the whole data vector is skipped.
         % param selectedClasses lists the considered event classes(labels). The others shall be skipped.
         % param aggregationFunctions list references to data aggregation functions which are applied to each channel and over the data covered by the labeled event time window
-        function obj = DefaultAggregatedDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses, aggregationFunctions)
-            obj = obj@AbstractDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses);
+        % param assumedEventDuration defines the time window resp. durations of labeled events which shall be considered                
+        function obj = DefaultAggregatedDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, aggregationFunctions, assumedEventDuration)
+            obj = obj@AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration);
             obj.aggregationFunctions = aggregationFunctions;
         end
         
@@ -67,6 +66,11 @@ classdef DefaultAggregatedDataAndLabelMerger < AbstractDataAndLabelMerger
                 featureVector(1, ( ( functionIdx - 1 ) * channelsCount ) + 1 : ( functionIdx * channelsCount ) ) = scalars;
             end
             
+        end
+        
+        function interpolatedData = interpolateSamples(~, eventWindowData, ~)
+            % nothing to interpolate, apply aggregation function to available values.
+            interpolatedData = eventWindowData;
         end
     end
     

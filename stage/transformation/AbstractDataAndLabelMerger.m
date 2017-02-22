@@ -36,7 +36,8 @@ classdef (Abstract) AbstractDataAndLabelMerger
         % param rawData is a struct with 'time', 'data', 'channelNames'        
         function [ data, time, labels, channelNames ] = run(obj, labeledEvents, rawData)
             
-            Log.getLogger().infoStart(class(obj), 'run');
+            LOG = Log.getLogger();
+            LOG.infoStart(class(obj), 'run');
             
             channelNames = rawData.channelNames;
             eventCount = length( labeledEvents.time );
@@ -77,6 +78,7 @@ classdef (Abstract) AbstractDataAndLabelMerger
                 % filter data
                 eventWindowData = obj.filterData(rawData.data(dataIdx, : ));                
                 if(isempty(eventWindowData))
+                    LOG.info('data filter', 'window skiped');
                     continue;
                 end
                 
@@ -103,7 +105,7 @@ classdef (Abstract) AbstractDataAndLabelMerger
             time( ~any(time,2), : ) = [];
             labels( ~any(labels,2), : ) = [];
             
-            Log.getLogger().infoEnd(class(obj), 'run');
+            LOG.infoEnd(class(obj), 'run');
         end
         
         function validateInput(obj)

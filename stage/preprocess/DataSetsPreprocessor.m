@@ -53,6 +53,11 @@ classdef DataSetsPreprocessor < Stage
                         continue;
                     end
                     
+                    % apply preprocessing function to selected channels
+                    if(isfield(obj.props, 'sensorChannelDataTransformer'))
+                        rawData = obj.props.run(rawData);
+                    end
+                    
                     % merge label and events
                     LOG.trace(obj.props.dataSource, 'merge labels and data');
                     [ sensorData, sensorTime, sensorLabels, channelNames ] = obj.props.dataAndLabelMerger.run(labeledEvents, rawData);
@@ -77,6 +82,9 @@ classdef DataSetsPreprocessor < Stage
                     dataSets{end}.time = dataSetTime;
                     dataSets{end}.labels = dataSetLabels;
                     dataSets{end}.data =  dataSetData;
+                    if(isfield(obj.props, 'print') && obj.props.print)
+                        obj.plotAndPrint(dataSets{end});
+                    end
                 end
             end
             
@@ -119,6 +127,19 @@ classdef DataSetsPreprocessor < Stage
             LOG.log(sprintf('Folder, Start(event), End(event), %s, Total(event), Start(data), End(data), %s, Total(data)\n', strjoin(obj.props.selectedClasses, '(data), '), strjoin(obj.props.selectedClasses, '(event), ')));
             LOG.log(sprintf('%s, %s, %s, %s %d, %s, %s, %s %d\n', dataSetFolderName, labeledStartTime, labeledEndTime, num2str(labeledClassCounts, '%d, '), sum(labeledClassCounts), dataStartTime, dataEndTime, num2str(dataClassCounts, '%d, '), sum(dataClassCounts)));
             
+        end
+        
+        function plotAndPrint(obj, dataSet)
+            plotsOutputFolder = [obj.props.outputFolder '\plots' ];
+            if(7~=exist(plotsOutputFolder,'dir'))
+                mkdir(plotsOutputFolder);
+            end
+            for i=1 : length(dataSet.data(1,:))
+                plot(dataSet.time, dataSet.data(:,i));
+                yyaxis right
+                plot(dataSet.time, dataSet.labels);
+                print([plotsOutputFolder '\' dataSet.name '_selectedChannel-' selectedChannelIdx], '-dpng');
+            end
         end
     end
     

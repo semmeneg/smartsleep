@@ -6,13 +6,13 @@ classdef LoggerTest < matlab.unittest.TestCase
     
     methods (Test)
         
-        %% Tests merge of raw data to labeled events
-        function testBMFeaturesTrainer(testCase)
+        %% Tests logger
+        function testLog(testCase)
             
-            LOG = Logger.getLogger('TestLogger');
-            LOG.logStart('sub');
-            LOG.logEnd('sub');
-            LOG.log('any message');
+            LOG = Log.getLogger('TestLogger');
+            LOG.infoStart('LoggerTest', 'sub');
+            LOG.infoEnd('LoggerTest', 'sub');
+            LOG.info('LoggerTest', 'any message');
         end
     end
 end

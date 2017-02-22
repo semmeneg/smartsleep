@@ -7,7 +7,17 @@ clear();
 LOG = Log.getLogger();
 
 % Common properties
-sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_10-11_Patients\P*' ], [CONF.BASE_DATA_PATH '2016_12_Patients\P*'], [CONF.BASE_DATA_PATH '2017_01_Patients\P*' ]};
+%sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_10-11_Patients\P*' ], [CONF.BASE_DATA_PATH '2016_12_Patients\P*'], [CONF.BASE_DATA_PATH '2017_01_Patients\P*' ]};
+sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_12_Patients\P12*'], ...
+[CONF.BASE_DATA_PATH '2016_12_Patients\P13*'], ...
+[CONF.BASE_DATA_PATH '2016_12_Patients\P16*'], ...
+[CONF.BASE_DATA_PATH '2016_12_Patients\P17*'], ...
+[CONF.BASE_DATA_PATH '2017_01_Patients\P18*'], ...
+[CONF.BASE_DATA_PATH '2017_01_Patients\P19*'], ...
+[CONF.BASE_DATA_PATH '2017_01_Patients\P20*'], ...
+[CONF.BASE_DATA_PATH '2017_01_Patients\P21*'], ...
+[CONF.BASE_DATA_PATH '2017_01_Patients\P25*']};
+
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
 outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-15_Raw_DBN_Weka_with_Biovotion_value6-11\'];
@@ -24,7 +34,7 @@ SETUP_LOG.log(['Datafolders: ' join({sourceDataFolders.name}, ', ')]);
 
 % process Biovotion
 % selectedRawDataChannels = { 'Value05','Value06','Value07','Value08','Value09','Value10','Value11' };
-selectedRawDataChannels = { 'Value05', 'Value09','Value10','Value11'};
+selectedRawDataChannels = { 'Value06','Value07','Value08' };
 samplingFrequency = 51.2; % Biovotion frequency: ~51.2 Hz
 assumedEventDuration = 30; % seconds
 
@@ -33,9 +43,11 @@ props.dataSource = dataSources{1};
 props.selectedClasses = selectedClasses;
 props.sourceDataFolders = sourceDataFolders;
 props.outputFolder = outputFolder;
-props.sensorsRawDataFilePatterns = {'*.txt'};
-props.sensorDataReader = BiovotionCsvReader(selectedRawDataChannels, 11); 
+props.sensorsRawDataFilePatterns = {'*.txt'};struct
+props.sensorDataReader = BiovotionCsvReader(selectedRawDataChannels, 11);
+props.sensorChannelDataTransformer = ChannelDataTransformer({'Value06','Value07','Value08'}, selectedRawDataChannels, @(values)values-min(values));
 props.dataAndLabelMerger = BiovotionRawDataAndLabelMerger(samplingFrequency, selectedRawDataChannels, selectedClasses, assumedEventDuration);
+props.print = true;
 
 preprocessor = DataSetsPreprocessor(props);
 dataSets = preprocessor.run();
