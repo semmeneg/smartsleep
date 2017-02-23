@@ -55,7 +55,7 @@ classdef DataSetsPreprocessor < Stage
                     
                     % apply preprocessing function to selected channels
                     if(isfield(obj.props, 'sensorChannelDataTransformer'))
-                        rawData = obj.props.run(rawData);
+                        rawData.data = obj.props.sensorChannelDataTransformer.run(rawData.data);
                     end
                     
                     % merge label and events

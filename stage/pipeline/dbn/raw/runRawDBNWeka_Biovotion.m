@@ -20,7 +20,7 @@ sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_12_Patients\P12*'], ...
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
-outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-15_Raw_DBN_Weka_with_Biovotion_value6-11\'];
+outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-22_Raw_DBN_Weka_with_Biovotion_value6-7\'];
 % outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-15_Test\'];
 [s, mess, messid] = mkdir(outputFolder);
 
@@ -60,7 +60,7 @@ sensorDataMerger = NamedDataSetsIntersection();
 [ mergedDataSets ] = sensorDataMerger.run(sensors);
 
 %Split data(sets) in trainings and validation data
-dataSplit = [1.0, 0.0, 0.0];
+dataSplit = [0.7, 0.3, 0.0];
 splittedData = DataGroupsStratificator(mergedDataSets, dataSplit);
 
 % Run DBN (RBM)
@@ -72,10 +72,10 @@ dbnInputData.validationLabels = splittedData.validationLabels;
 inputComponents = floor(size( dbnInputData.data, 2 ));
 SETUP_LOG.log([ 'DBN data split (training:validation:test): ' num2str(dataSplit) ]);
 SETUP_LOG.log(sprintf('%s %d', 'Rawdata components:', inputComponents));
-layersConfig =[struct('hiddenUnitsCount', floor(inputComponents /4), 'maxEpochs', 50); ...
-               struct('hiddenUnitsCount', floor(inputComponents * 4), 'maxEpochs', 50)];
+layersConfig =[struct('hiddenUnitsCount', floor(inputComponents /2), 'maxEpochs', 10); ...
+               struct('hiddenUnitsCount', floor(inputComponents /3), 'maxEpochs', 10)];
 
-rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData);
+rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData, false);
 SETUP_LOG.logDBN(rbmTrainer.getDBN());
 higherOrderFeaturesDBN = rbmTrainer.run();
 
