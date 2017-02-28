@@ -17,13 +17,12 @@ classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
         
         %% Skip the labeled event window if the expected set of
         % matching raw data is not fully available (ex. at the beginning or if mandatory channels are "0").
-        function filterdData = filterData(obj, eventWindowData)
+        function filterdData = filterData(obj, eventWindowData, mandatoryColumnsIds)
             
                 filterdData = eventWindowData;
                             
                 % skip event if one value of required channels value is 0
-                for channel = obj.mandatoryChannelsName
-                    channelId = strmatch(channel, obj.rawData.channelNames, 'exact');
+                for channelId = mandatoryColumnsIds
                     if( sum(~any(eventWindowData(:,channelId),2)) > 0)
                         filterdData = [];
                         return;
@@ -47,7 +46,7 @@ classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
             interpolatedData = [];
             samplesCount = size(eventWindowData,1);
             
-            if(samplesCount == obj.samplesPerChannel)
+            if(samplesCount == obj.samplesPerEvent)
                 interpolatedData = eventWindowData;
                 return; %nothing to interpolate/decimate
             end
@@ -57,18 +56,25 @@ classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
             end
             
             % decimate
-            if(samplesCount > obj.samplesPerChannel) % skip last samples
-                delta = samplesCount - obj.samplesPerChannel;
+            if(samplesCount > obj.samplesPerEvent) % skip last samples
+                delta = samplesCount - obj.samplesPerEvent;
                 interpolatedData = eventWindowData(1:end-delta,:);
                 return;
             end
             
             %interpolate
             lastAndNextSampleVector = [eventWindowData(end,:);nextWindowsFirstSample];
-            missingSamples = obj.samplesPerChannel - samplesCount;
+            missingSamples = obj.samplesPerEvent - samplesCount;
             stepSize = 1/(missingSamples+1);
             interpolatedDataBlock = interp1(1:2, lastAndNextSampleVector, 1:stepSize:2);
-            interpolatedNewData = interpolatedDataBlock(2:end-1,:);
+            
+            %in case of only one value (column) the array orientation must
+            %be switched after interpolation (Matlab magic)
+            if(size(eventWindowData,2) == 1)
+                interpolatedNewData = interpolatedDataBlock(:, 2:end-1)';
+            else
+                interpolatedNewData = interpolatedDataBlock(2:end-1,:);
+            end
             interpolatedData = [ eventWindowData ; interpolatedNewData ];
         end
         

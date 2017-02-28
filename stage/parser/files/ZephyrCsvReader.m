@@ -42,6 +42,7 @@ classdef ZephyrCsvReader < AbstractSensorDataReader
             for i = 1 : tableSize
                 dataSet.time( i ) = obj.matlabTimeToUnixTime( datenum( timeStrs{ i }, obj.TIMEFORMAT ) );
             end
+            dataSet.channelNames = obj.selectedChannels;
         end
         
         function [ unixTime ] = matlabTimeToUnixTime(obj, matlabTime )

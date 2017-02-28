@@ -19,7 +19,7 @@ classdef BiovotionRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
         
         %% Skips event data if less as half of the samples have 0
         % values on each channel. 
-        function filterdData = filterData(obj, eventWindowData)
+        function filterdData = filterData(obj, eventWindowData, ~)
             
                 filterdData = eventWindowData;
                             
@@ -31,48 +31,6 @@ classdef BiovotionRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
                 if(size(filterdData,1) < (obj.samplingFrequency * obj.assumedEventDuration)/2)
                     filterdData = [];
                 end
-        end
-        
-        %% The expected samples (records) in a event window is given by the multiplication of 
-        % the sampling frequency (sensors samples per second) and the event
-        % duration in seconds. This function interpolates missing samples
-        % based on the last sample in the window and the next windows first
-        % sample. 
-        function interpolatedData = interpolateSamples(obj, eventWindowData, nextWindowsFirstSample)
-            
-            interpolatedData = [];
-            samplesCount = size(eventWindowData,1);
-            
-            if(samplesCount == obj.samplesPerEvent)
-                interpolatedData = eventWindowData;
-                return; %nothing to interpolate/decimate
-            end
-            
-            if(isempty(nextWindowsFirstSample))
-                return; %last event, no next dataset for interpolation available.
-            end
-            
-            % decimate
-            if(samplesCount > obj.samplesPerEvent) % skip last samples
-                delta = samplesCount - obj.samplesPerEvent;
-                interpolatedData = eventWindowData(1:end-delta,:);
-                return;
-            end
-            
-            %interpolate
-            lastAndNextSampleVector = [eventWindowData(end,:);nextWindowsFirstSample];
-            missingSamples = obj.samplesPerEvent - samplesCount;
-            stepSize = 1/(missingSamples+1);
-            interpolatedDataBlock = interp1(1:2, lastAndNextSampleVector, 1:stepSize:2);
-            
-            %in case of only one value (column) the array orientation must
-            %be switched after interpolation (Matlab magic)
-            if(size(eventWindowData,2) == 1)
-                interpolatedNewData = interpolatedDataBlock(:, 2:end-1)';
-            else
-                interpolatedNewData = interpolatedDataBlock(2:end-1,:);
-            end
-            interpolatedData = [ eventWindowData ; interpolatedNewData ];
         end
         
         %% Just create a feature vector of all data

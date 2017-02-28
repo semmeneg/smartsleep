@@ -16,6 +16,17 @@ classdef UtilTest < matlab.unittest.TestCase
             sourceFolders = getFolderList(sourceFolderPatterns);
             testCase.assertEqual(length(sourceFolders), 2);
         end
+        
+        %% Tests normalization of vector to given range
+        function testNormalizeToRange(testCase) 
+            
+            values = -10:10;
+            a=-5;
+            b=5;
+            valuesNormalized = normalizeToRange(values, a, b);
+            expectedOut = -5:0.5:5;
+            testCase.assertEqual(valuesNormalized, expectedOut);
+        end
     end
 end
 

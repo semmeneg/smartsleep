@@ -32,7 +32,7 @@ classdef DefaultAggregatedDataAndLabelMerger < AbstractDataAndLabelMerger
         %% Remove data samples where at least one of the non zero channels is "0".
         % Skip whole window data set if less than 50% of the event window
         % data is left after filtering
-        function filterdData = filterData(obj, eventWindowData)
+        function filterdData = filterData(obj, eventWindowData, ~)
             
             filterdData = eventWindowData;
             samplesPerWindow = size(eventWindowData,1);

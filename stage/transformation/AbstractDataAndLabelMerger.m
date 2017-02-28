@@ -76,7 +76,13 @@ classdef (Abstract) AbstractDataAndLabelMerger
                 end
 
                 % filter data
-                eventWindowData = obj.filterData(rawData.data(dataIdx, : ));                
+                mandatoryColumnsIds = [];
+                for channel = obj.mandatoryChannelsName
+                    channelId = strmatch(channel, channelNames, 'exact');
+                    mandatoryColumnsIds = [mandatoryColumnsIds; channelId];
+                end
+                    
+                eventWindowData = obj.filterData(rawData.data(dataIdx, : ), mandatoryColumnsIds);                
                 if(isempty(eventWindowData))
                     LOG.info('data filter', 'window skiped');
                     continue;
@@ -127,7 +133,7 @@ classdef (Abstract) AbstractDataAndLabelMerger
     end
     
     methods(Abstract)
-        filteredData = filterData(obj, eventWindowData)
+        filteredData = filterData(obj, eventWindowData, mandatoryColumnsIds)
         eventWindowData = interpolateSamples(eventWindowData, nextWindowsFirstSample)
         featureVector = createFeatureVector(obj, eventWindowData)
     end

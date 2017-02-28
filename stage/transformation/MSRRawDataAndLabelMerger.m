@@ -19,7 +19,7 @@ classdef MSRRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
         
         %% Skips event data if less as half of the samples have 0
         % values on each channel. 
-        function filterdData = filterData(obj, eventWindowData)
+        function filterdData = filterData(obj, eventWindowData, ~)
             
                 filterdData = eventWindowData;
                             
