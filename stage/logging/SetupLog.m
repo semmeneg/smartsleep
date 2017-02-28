@@ -8,7 +8,7 @@ classdef SetupLog
     methods
         function obj = SetupLog( logPath, permission )
             obj.logPath = logPath;
-            if(nargin == 0)
+            if(nargin < 2)
                 permission = 'w';
             end
             try

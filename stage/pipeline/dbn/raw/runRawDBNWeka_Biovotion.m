@@ -20,7 +20,7 @@ sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_12_Patients\P12*'], ...
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
-outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-22_Raw_DBN_Weka_with_Biovotion_value6-7\'];
+outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-27_Raw_DBN_Weka_with_Biovotion_value6-11\'];
 % outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-15_Test\'];
 [s, mess, messid] = mkdir(outputFolder);
 
@@ -34,7 +34,7 @@ SETUP_LOG.log(['Datafolders: ' join({sourceDataFolders.name}, ', ')]);
 
 % process Biovotion
 % selectedRawDataChannels = { 'Value05','Value06','Value07','Value08','Value09','Value10','Value11' };
-selectedRawDataChannels = { 'Value06','Value07','Value08' };
+selectedRawDataChannels = { 'Value06','Value07','Value08','Value09','Value10','Value11' };
 samplingFrequency = 51.2; % Biovotion frequency: ~51.2 Hz
 assumedEventDuration = 30; % seconds
 
@@ -43,11 +43,11 @@ props.dataSource = dataSources{1};
 props.selectedClasses = selectedClasses;
 props.sourceDataFolders = sourceDataFolders;
 props.outputFolder = outputFolder;
-props.sensorsRawDataFilePatterns = {'*.txt'};struct
+props.sensorsRawDataFilePatterns = {'*.txt'};
 props.sensorDataReader = BiovotionCsvReader(selectedRawDataChannels, 11);
-props.sensorChannelDataTransformer = ChannelDataTransformer({'Value06','Value07','Value08'}, selectedRawDataChannels, @(values)values-min(values));
+props.sensorChannelDataTransformer = ChannelDataTransformer({'Value06','Value07','Value08'}, selectedRawDataChannels, @(values)values-min(values)-mean(values));
 props.dataAndLabelMerger = BiovotionRawDataAndLabelMerger(samplingFrequency, selectedRawDataChannels, selectedClasses, assumedEventDuration);
-props.print = true;
+props.print = false;
 
 preprocessor = DataSetsPreprocessor(props);
 dataSets = preprocessor.run();
@@ -72,10 +72,10 @@ dbnInputData.validationLabels = splittedData.validationLabels;
 inputComponents = floor(size( dbnInputData.data, 2 ));
 SETUP_LOG.log([ 'DBN data split (training:validation:test): ' num2str(dataSplit) ]);
 SETUP_LOG.log(sprintf('%s %d', 'Rawdata components:', inputComponents));
-layersConfig =[struct('hiddenUnitsCount', floor(inputComponents /2), 'maxEpochs', 10); ...
-               struct('hiddenUnitsCount', floor(inputComponents /3), 'maxEpochs', 10)];
+layersConfig =[struct('hiddenUnitsCount', floor(inputComponents /2), 'maxEpochs', 150); ...
+               struct('hiddenUnitsCount', floor(inputComponents /3), 'maxEpochs', 150)];
 
-rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData, false);
+rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData, true);
 SETUP_LOG.logDBN(rbmTrainer.getDBN());
 higherOrderFeaturesDBN = rbmTrainer.run();
 
