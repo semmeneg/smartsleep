@@ -32,26 +32,9 @@ SETUP_LOG.log(strjoin(dataSources, ' & '));
 SETUP_LOG.log('Pipeline: Rawdata > DBN > Weka(RandomForest,10foldCross)');
 SETUP_LOG.log(['Datafolders: ' join({sourceDataFolders.name}, ', ')]);
 
-% process Biovotion
-% selectedRawDataChannels = { 'Value05','Value06','Value07','Value08','Value09','Value10','Value11' };
-selectedRawDataChannels = { 'Value06','Value07','Value08','Value09','Value10','Value11' };
-samplingFrequency = 51.2; % Biovotion frequency: ~51.2 Hz
-assumedEventDuration = 30; % seconds
-
-props = [];
-props.dataSource = dataSources{1};
-props.selectedClasses = selectedClasses;
-props.sourceDataFolders = sourceDataFolders;
-props.outputFolder = outputFolder;
-props.sensorsRawDataFilePatterns = {'*.txt'};
-props.sensorDataReader = BiovotionCsvReader(selectedRawDataChannels, 11);
-props.sensorChannelDataTransformer = ChannelDataTransformer({'Value06','Value07','Value08'}, selectedRawDataChannels, @(values)values-min(values)-mean(values));
-props.dataAndLabelMerger = BiovotionRawDataAndLabelMerger(samplingFrequency, selectedRawDataChannels, selectedClasses, assumedEventDuration);
-props.print = false;
-
-preprocessor = DataSetsPreprocessor(props);
+% ---- Preprocess Biovotion --------
+preprocessor = BiovotionPreprocessorBuilder(selectedClasses, sourceDataFolders, outputFolder).build();
 dataSets = preprocessor.run();
-
 
 sensors = [];
 sensors{end+1} = dataSets;

@@ -1,6 +1,5 @@
 % Create higher order features with DBN and run
 % Weka Random Forest classifer on merged data input.
-
 tic
 clear();
 
@@ -11,7 +10,7 @@ sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient*']};
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
-outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-28_Raw_DBN_Weka_with_Zephyr_2_input_normalized_to_-5_+5\'];
+outputFolder = [CONF.BASE_OUTPUT_PATH '2017-03-01_Raw_DBN_Weka_with_Zephyr_input_normalized\'];
 [s, mess, messid] = mkdir(outputFolder);
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
@@ -22,32 +21,9 @@ SETUP_LOG.log(strjoin(dataSources, ' & '));
 SETUP_LOG.log('Pipeline: Rawdata > DBN > Weka(RandomForest,10foldCross)');
 SETUP_LOG.log(['Datafolders: ' join({sourceDataFolders.name}, ', ')]);
 
-% process Zephyr
-selectedRawDataChannels = { 'HR', 'BR', 'PeakAccel', ...
-    'BRAmplitude', 'ECGAmplitude', ...
-    'VerticalMin', 'VerticalPeak', ...
-    'LateralMin', 'LateralPeak', 'SagittalMin', 'SagittalPeak' };
-mandatoryChannelsName = { 'HR', 'BR' };
-samplingFrequency = 1; % 1 Hz
-assumedEventDuration = 30; % seconds
-
-props = [];
-props.dataSource = dataSources{1};
-props.selectedClasses = selectedClasses;
-props.sourceDataFolders = sourceDataFolders;
-props.outputFolder = outputFolder;
-props.sensorsRawDataFilePatterns = {'*_Summary.csv'};
-props.mandatoryChannelsName = mandatoryChannelsName;
-props.sensorDataReader = ZephyrCsvReader(selectedRawDataChannels);
-% dataPreprocessingFunction = @(values)values-min(values)-mean(values));
-dataPreprocessingFunction = @(values)normalizeToRange(values,-5,5);
-props.sensorChannelDataTransformer = ChannelDataTransformer(selectedRawDataChannels, selectedRawDataChannels, dataPreprocessingFunction);
-props.dataAndLabelMerger = DefaultRawDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration);
-props.print = false;
-
-preprocessor = DataSetsPreprocessor(props);
+% ---- Preprocess Zephyr -----------
+preprocessor = ZephyrPreprocessorBuilder(selectedClasses, sourceDataFolders, outputFolder).build();
 dataSets = preprocessor.run();
-
 
 sensors = [];
 sensors{end+1} = dataSets;
@@ -69,7 +45,7 @@ inputComponents = floor(size( dbnInputData.data, 2 ));
 SETUP_LOG.log([ 'DBN data split (training:validation:test): ' num2str(dataSplit) ]);
 SETUP_LOG.log(sprintf('%s %d', 'Rawdata components:', inputComponents));
 layersConfig =[struct('hiddenUnitsCount', floor(inputComponents *4), 'maxEpochs', 150); ...
-               struct('hiddenUnitsCount', floor(inputComponents *4), 'maxEpochs', 150)];
+    struct('hiddenUnitsCount', floor(inputComponents *4), 'maxEpochs', 150)];
 
 rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData, true);
 SETUP_LOG.logDBN(rbmTrainer.getDBN());
