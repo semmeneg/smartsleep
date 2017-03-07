@@ -18,15 +18,15 @@ classdef ChannelDataTransformer
         
         function [data] = run(obj, data)
             
-            LOG = Log.getLogger();
-            LOG.infoStart(class(obj), 'run');
+            %LOG = Log.getLogger();
+            %LOG.infoStart(class(obj), 'run');
             
             for channelToPreProcess = obj.channelNames
                 posOfChannelToPreProcess = strmatch(channelToPreProcess, obj.allChannelNames, 'exact');
                 data(:,posOfChannelToPreProcess) = obj.functionHandle(data(:,posOfChannelToPreProcess));
             end
             
-            LOG.infoEnd(class(obj), 'run');
+            %LOG.infoEnd(class(obj), 'run');
         end
     end
     

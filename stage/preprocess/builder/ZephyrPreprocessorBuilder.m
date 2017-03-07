@@ -46,8 +46,8 @@ classdef ZephyrPreprocessorBuilder
             props.outputFolder = obj.outputFolder;
             props.sensorsRawDataFilePatterns = obj.sensorsRawDataFilePatterns;
             props.sensorDataReader = ZephyrCsvReader(obj.selectedRawDataChannels);
-            props.sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
-            props.dataAndLabelMerger = DefaultRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration);
+            sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
+            props.dataAndLabelMerger = DefaultRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration, sensorChannelDataTransformer);
             props.print = obj.print;
             preprocessor = DataSetsPreprocessor(props);
         end
