@@ -10,7 +10,7 @@ sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient*']};
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
-outputFolder = [CONF.BASE_OUTPUT_PATH '2017-03-01_Raw_DBN_Weka_with_Zephyr_input_normalized\'];
+outputFolder = [CONF.BASE_OUTPUT_PATH '2017-03-08_Raw_DBN_Weka_Zephyr_normalized_over_all_persons\'];
 [s, mess, messid] = mkdir(outputFolder);
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
@@ -54,11 +54,11 @@ higherOrderFeaturesDBN = rbmTrainer.run();
 dataSource = strjoin(dataSources, '_');
 
 % Save DBN trained model
-% dbnLearnedModelFolder = [ BASE_PATH '\processed\' CONF.DBN_DATA_SUBFOLDER '\'  processingOutputFolder];
-% [s, mess, messid] = mkdir(dbnLearnedModelFolder);
-% dbnLearnedModelFile = [dbnLearnedModelFolder '\dbn_trainedModel_' dataSource '.mat'];
-% dbn = rbmTrainer.getDBN();
-% save(dbnLearnedModelFile, 'dbn');
+dbnLearnedModelFolder = [ outputFolder '\dbn\'];
+[s, mess, messid] = mkdir(dbnLearnedModelFolder);
+dbnLearnedModelFile = [dbnLearnedModelFolder '\dbn_trainedModel_' dataSource '.mat'];
+dbn = rbmTrainer.getDBN();
+save(dbnLearnedModelFile, 'dbn');
 
 % write ARFF files
 arffFileName = [ outputFolder 'dbn_created_features__' dataSource '.arff'];

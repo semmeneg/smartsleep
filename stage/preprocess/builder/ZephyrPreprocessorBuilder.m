@@ -13,7 +13,7 @@ classdef ZephyrPreprocessorBuilder
         assumedEventDuration = 30; % seconds
         dataSource = 'Zephyr';
         sensorsRawDataFilePatterns = {'*_Summary.csv'};
-        dataPreprocessingFunction = @(values)normalizeToRange(values,-5,5);
+        dataPreprocessingFunction = @(values, allValues)normalizeToRangeWithMinMax(values, allValues, -5,5);
         channelsToApplyNormalizationFunction = {};
         print = false;
     end
@@ -46,8 +46,8 @@ classdef ZephyrPreprocessorBuilder
             props.outputFolder = obj.outputFolder;
             props.sensorsRawDataFilePatterns = obj.sensorsRawDataFilePatterns;
             props.sensorDataReader = ZephyrCsvReader(obj.selectedRawDataChannels);
-            sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
-            props.dataAndLabelMerger = DefaultRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration, sensorChannelDataTransformer);
+            props.sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
+            props.dataAndLabelMerger = DefaultRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration);
             props.print = obj.print;
             preprocessor = DataSetsPreprocessor(props);
         end

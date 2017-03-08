@@ -11,8 +11,8 @@ classdef DefaultRawDataAndLabelMerger < AbstractDataAndLabelMerger
         % param mandatoryChannelsName array of channels not expected to be empty (0), otherwise the whole data vector is skipped.
         % param selectedClasses lists the considered event classes(labels). The others shall be skipped.
         % param assumedEventDuration defines the time window resp. durations of labeled events which shall be considered
-        function obj = DefaultRawDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration, sensorChannelDataTransformer)
-            obj = obj@AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration, sensorChannelDataTransformer);
+        function obj = DefaultRawDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration)
+            obj = obj@AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration);
         end
         
         %% Skip the labeled event window if the expected set of

@@ -1,8 +1,8 @@
 % Normalize values to given range.
 %
-function [ normalizedData ] = normalizeToRange(values, a, b)
-    minValue=min(values);
-    maxValue=max(values);
+function [ normalizedData ] = normalizeToRange(values, allValues, a, b)
+    minValue=min(allValues);
+    maxValue=max(allValues);
     normalizedData = a+((values-minValue)*(b-a))/(maxValue-minValue);
 end
 
