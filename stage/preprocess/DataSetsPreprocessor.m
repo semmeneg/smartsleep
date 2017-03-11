@@ -24,7 +24,7 @@ classdef DataSetsPreprocessor < Stage
             LOG = Log.getLogger();
             LOG.infoStart(class(obj), 'run');
             dataSets = [];
-
+            
             for sourceDataFolderIdx = 1 : length(obj.props.sourceDataFolders)
                 
                 sourceDataFolder = obj.props.sourceDataFolders(sourceDataFolderIdx);
@@ -81,15 +81,6 @@ classdef DataSetsPreprocessor < Stage
                         obj.plotAndPrint(dataSets{end});
                     end
                 end
-            end
-            
-            % apply preprocessing function to selected channels
-            if(isfield(obj.props, 'sensorChannelDataTransformer') && ~isempty(dataSets))
-                for dataSetIdx = 1 : length(dataSets)
-                    allData = [allData; dataSets{dataSetIdx}.data];
-                end
-                
-                dataSets{dataSetIdx}.data = obj.props.sensorChannelDataTransformer.run(dataSets{dataSetIdx}.data, allData);
             end
             
             LOG.infoEnd(class(obj), 'run');

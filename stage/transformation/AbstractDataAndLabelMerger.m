@@ -8,6 +8,7 @@ classdef (Abstract) AbstractDataAndLabelMerger
         selectedClasses = [];
         assumedEventDuration = [];
         samplesPerEvent = [];
+        sensorChannelDataTransformer = [];
     end
     
     methods
@@ -18,12 +19,13 @@ classdef (Abstract) AbstractDataAndLabelMerger
         % param mandatoryChannelsName array of channels not expected to be empty (0). Skips whole data vector if one of this channels is null.
         % param selectedClasses lists the considered event classes(labels). The others shall be skipped.
         % param assumedEventDuration defines the time window resp. durations of labeled events which shall be considered
-        function obj = AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration)
+        function obj = AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration, sensorChannelDataTransformer)
             obj.samplingFrequency = samplingFrequency;
             obj.mandatoryChannelsName = mandatoryChannelsName;
             obj.selectedClasses = selectedClasses;
             obj.assumedEventDuration = assumedEventDuration;
             obj.samplesPerEvent = ceil(obj.samplingFrequency * obj.assumedEventDuration); %rounded up
+            obj.sensorChannelDataTransformer = sensorChannelDataTransformer;
             
             obj.validateInput();
         end
@@ -46,8 +48,6 @@ classdef (Abstract) AbstractDataAndLabelMerger
             data = zeros( eventCount, componentsCount);
             time = zeros( eventCount, 1 );
             labels = zeros( eventCount, 1 );
-            
-            eventWindowsSkiped = 0;
             
             for i = 1 : eventCount
                 
@@ -77,16 +77,16 @@ classdef (Abstract) AbstractDataAndLabelMerger
                     continue;
                 end
 
+                % filter data
                 mandatoryColumnsIds = [];
                 for channel = obj.mandatoryChannelsName
                     channelId = strmatch(channel, channelNames, 'exact');
                     mandatoryColumnsIds = [mandatoryColumnsIds channelId];
                 end
-                
-                % filter data                
+                    
                 eventWindowData = obj.filterData(rawData.data(dataIdx, : ), mandatoryColumnsIds);                
                 if(isempty(eventWindowData))
-                    eventWindowsSkiped = eventWindowsSkiped+1;
+                    LOG.info('data filter', 'window skiped');
                     continue;
                 end
                 
@@ -102,6 +102,12 @@ classdef (Abstract) AbstractDataAndLabelMerger
                     continue;
                 end
                 
+                %preprocess data if transformer with transformation
+                %function (mostly normalization) is set
+                if(~isempty(obj.sensorChannelDataTransformer))
+                    eventWindowData = obj.sensorChannelDataTransformer.run(eventWindowData);
+                end
+                
                 % add data, time and labels
                 data(i,:) = obj.createFeatureVector(eventWindowData);
                 time(i) = eventStartTime;
@@ -113,7 +119,6 @@ classdef (Abstract) AbstractDataAndLabelMerger
             time( ~any(time,2), : ) = [];
             labels( ~any(labels,2), : ) = [];
             
-            LOG.info('data filter', sprintf('event windows skiped: %i of %i', eventWindowsSkiped, eventCount));
             LOG.infoEnd(class(obj), 'run');
         end
         

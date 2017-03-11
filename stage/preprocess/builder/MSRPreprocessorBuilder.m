@@ -10,7 +10,7 @@ classdef MSRPreprocessorBuilder < handle
         assumedEventDuration = 30; % seconds
         dataSource = 'MSR';
         sensorsRawDataFilePatterns = {'*HAND.mat', '*FUSS.mat'};
-        dataPreprocessingFunction = @(values, allValues)normalizeToRangeWithMinMax(values, allValues, -5,5);
+        dataPreprocessingFunction = @(values)normalizeToRange(values,-5,5);
         channelsToApplyNormalizationFunction = {};
         print = false;
     end
@@ -27,6 +27,7 @@ classdef MSRPreprocessorBuilder < handle
             obj.sourceDataFolders = sourceDataFolders;
             obj.outputFolder = outputFolder;
             
+            obj.mandatoryChannelsName = obj.selectedRawDataChannels;
             obj.channelsToApplyNormalizationFunction = obj.selectedRawDataChannels;
         end
     end
@@ -42,8 +43,8 @@ classdef MSRPreprocessorBuilder < handle
             props.outputFolder = obj.outputFolder;
             props.sensorsRawDataFilePatterns = obj.sensorsRawDataFilePatterns;
             props.sensorDataReader = MSRMatlabReader(obj.selectedRawDataChannels);
-            props.sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
-            props.dataAndLabelMerger = DefaultRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration);
+            sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
+            props.dataAndLabelMerger = DefaultRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration, sensorChannelDataTransformer);
             props.print = obj.print;
             preprocessor = DataSetsPreprocessor(props);
         end

@@ -60,8 +60,6 @@ classdef NamedDataSetsIntersection
         % Merge datasets based on the matching time. 
         function [mergedDataSet] = mergeDataSets(obj, dataSets)
          
-            mergedDataSet = [];
-            
             % get times intersection first
             time = dataSets{1}.time;
             for dataSetsIdx = 2 : length(dataSets)

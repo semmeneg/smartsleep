@@ -6,13 +6,7 @@ clear();
 LOG = Log.getLogger();
 
 % Common properties
-% sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient09*'], ...
-% [CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient1*'], ...
-% [CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient2*']};
-
-sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient09*'], ...
-[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient10*'], ...
-[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient11*']};
+sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient*']};
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
@@ -71,11 +65,11 @@ higherOrderFeaturesDBN = rbmTrainer.run();
 dataSource = strjoin(dataSources, '_');
 
 % Save DBN trained model
-dbnLearnedModelFolder = [ outputFolder '\dbn\'];
-[s, mess, messid] = mkdir(dbnLearnedModelFolder);
-dbnLearnedModelFile = [dbnLearnedModelFolder '\dbn_trainedModel_' dataSource '.mat'];
-dbn = rbmTrainer.getDBN();
-save(dbnLearnedModelFile, 'dbn');
+% dbnLearnedModelFolder = [ BASE_PATH '\processed\' CONF.DBN_DATA_SUBFOLDER '\'  processingOutputFolder];
+% [s, mess, messid] = mkdir(dbnLearnedModelFolder);
+% dbnLearnedModelFile = [dbnLearnedModelFolder '\dbn_trainedModel_' dataSource '.mat'];
+% dbn = rbmTrainer.getDBN();
+% save(dbnLearnedModelFile, 'dbn');
 
 % write ARFF files
 arffFileName = [ outputFolder 'dbn_created_features__' dataSource '.arff'];
