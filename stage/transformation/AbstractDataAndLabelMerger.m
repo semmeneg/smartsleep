@@ -8,7 +8,6 @@ classdef (Abstract) AbstractDataAndLabelMerger
         selectedClasses = [];
         assumedEventDuration = [];
         samplesPerEvent = [];
-        sensorChannelDataTransformer = [];
     end
     
     methods
@@ -19,13 +18,12 @@ classdef (Abstract) AbstractDataAndLabelMerger
         % param mandatoryChannelsName array of channels not expected to be empty (0). Skips whole data vector if one of this channels is null.
         % param selectedClasses lists the considered event classes(labels). The others shall be skipped.
         % param assumedEventDuration defines the time window resp. durations of labeled events which shall be considered
-        function obj = AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration, sensorChannelDataTransformer)
+        function obj = AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration)
             obj.samplingFrequency = samplingFrequency;
             obj.mandatoryChannelsName = mandatoryChannelsName;
             obj.selectedClasses = selectedClasses;
             obj.assumedEventDuration = assumedEventDuration;
             obj.samplesPerEvent = ceil(obj.samplingFrequency * obj.assumedEventDuration); %rounded up
-            obj.sensorChannelDataTransformer = sensorChannelDataTransformer;
             
             obj.validateInput();
         end
@@ -81,7 +79,7 @@ classdef (Abstract) AbstractDataAndLabelMerger
                 mandatoryColumnsIds = [];
                 for channel = obj.mandatoryChannelsName
                     channelId = strmatch(channel, channelNames, 'exact');
-                    mandatoryColumnsIds = [mandatoryColumnsIds channelId];
+                    mandatoryColumnsIds = [mandatoryColumnsIds; channelId];
                 end
                     
                 eventWindowData = obj.filterData(rawData.data(dataIdx, : ), mandatoryColumnsIds);                
@@ -100,12 +98,6 @@ classdef (Abstract) AbstractDataAndLabelMerger
                 eventWindowData = obj.interpolateSamples(eventWindowData, nextWindowsFirstSample);                
                 if(isempty(eventWindowData))
                     continue;
-                end
-                
-                %preprocess data if transformer with transformation
-                %function (mostly normalization) is set
-                if(~isempty(obj.sensorChannelDataTransformer))
-                    eventWindowData = obj.sensorChannelDataTransformer.run(eventWindowData);
                 end
                 
                 % add data, time and labels
