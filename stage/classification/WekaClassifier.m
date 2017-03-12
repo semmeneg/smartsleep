@@ -34,22 +34,28 @@ classdef WekaClassifier
             % create directory for result files
             [status,message,messageid] = mkdir(obj.resultFolderPath);
             
-            % Weka output: trained modelfile
-            modelFile = [obj.resultFolderPath obj.trainedModelFileName];
-            
             textResultsFile = [obj.resultFolderPath obj.textResultFileName];
             
             tStart = tic;
             fprintf('Start Weka classification training: %s.\n', datetime);
             oldFolder = cd( CONF.WEKA_PATH );
-            if(isempty(obj.arffValidationFile)) %use default 10foldCross validation
-            cmd = [ 'java -Xmx6144m -cp weka.jar weka.classifiers.trees.RandomForest' ...
-                ' -t "' obj.arffFile '"'...
-                ' -d "' modelFile  '"' ];
-            else
-                % TODO !!!!!! call Weka with training (arffFile) and
-                % validation file (arffValidationFile)
+            % Weka trained modelfile
+            modelFile = [obj.resultFolderPath obj.trainedModelFileName];
+            if(~exist(modelFile, 'file')) %Train classifier
+                if(isempty(obj.arffValidationFile)) %use default 10foldCross validation
+                    cmd = [ 'java -Xmx6144m -cp weka.jar weka.classifiers.trees.RandomForest' ...
+                        ' -t "' obj.arffFile '"'...
+                        ' -d "' modelFile  '"' ];
+                else
+                    % TODO !!!!!! call Weka with training (arffFile) and
+                    % validation file (arffValidationFile)
+                end
+            else %make predictions (classify) with a trained model
+                cmd = [ 'java -Xmx6144m -cp weka.jar weka.classifiers.trees.RandomForest' ...
+                        ' -T "' obj.arffFile '"'...
+                        ' -l "' modelFile  '"' ];
             end
+            
             
             
             [ status, cmdout ] = system( cmd );
