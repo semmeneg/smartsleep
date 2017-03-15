@@ -6,12 +6,12 @@ clear();
 LOG = Log.getLogger();
 
 % Common properties
-sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient05*']};
+sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient27*']};
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
-modelsFolder = [CONF.BASE_OUTPUT_PATH '2017-03-11_Raw_DBN_Weka_with_MSR_Zephyr_normalized_persons_04-07_19-27\'];
-outputFolder = [modelsFolder 'validation\Patient05\'];
+modelsFolder = [CONF.BASE_OUTPUT_PATH '2017-03-11_Raw_DBN_Weka_with_MSR_Zephyr_normalized_persons_04-16\'];
+outputFolder = [modelsFolder 'validation\Patient27\'];
 [s, mess, messid] = mkdir(outputFolder);
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};

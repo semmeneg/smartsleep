@@ -10,7 +10,7 @@ sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient*']};
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
-outputFolder = [CONF.BASE_OUTPUT_PATH '2017-03-02_Raw_DBN_Weka_with_MSR_Zephyr_input_normalized\'];
+outputFolder = [CONF.BASE_OUTPUT_PATH '2017-03-15_Raw_DBN__MSR_Zephyr__normalized_overall_persons_1-27\'];
 [s, mess, messid] = mkdir(outputFolder);
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};

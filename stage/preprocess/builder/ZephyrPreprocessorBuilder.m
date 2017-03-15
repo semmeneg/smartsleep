@@ -13,7 +13,7 @@ classdef ZephyrPreprocessorBuilder
         assumedEventDuration = 30; % seconds
         dataSource = 'Zephyr';
         sensorsRawDataFilePatterns = {'*_Summary.csv'};
-        dataPreprocessingFunction = @(values)normalizeToRange(values,-5,5);
+        dataPreprocessingFunction = @(values, minValue, maxValue)normalizeToRangeWithMinMax(values,-5,5, minValue, maxValue);
         channelsToApplyNormalizationFunction = {};
         print = false;
     end

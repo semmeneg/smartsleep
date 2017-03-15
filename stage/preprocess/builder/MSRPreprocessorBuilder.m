@@ -10,7 +10,7 @@ classdef MSRPreprocessorBuilder < handle
         assumedEventDuration = 30; % seconds
         dataSource = 'MSR';
         sensorsRawDataFilePatterns = {'*HAND.mat', '*FUSS.mat'};
-        dataPreprocessingFunction = @(values)normalizeToRange(values,-5,5);
+        dataPreprocessingFunction = @(values, minValue, maxValue)normalizeToRangeWithMinMax(values,-5,5, minValue, maxValue);
         channelsToApplyNormalizationFunction = {};
         print = false;
     end

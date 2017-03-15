@@ -10,7 +10,7 @@ classdef BiovotionPreprocessorBuilder
         assumedEventDuration = 30; % seconds
         dataSource = 'Biovotion';
         sensorsRawDataFilePatterns = {'*.txt'};
-        dataPreprocessingFunction = @(values)normalizeToRange(values,-5,5);
+        dataPreprocessingFunction = @(values, minValue, maxValue)normalizeToRangeWithMinMax(values,-5,5, minValue, maxValue);
         channelsToApplyNormalizationFunction = {};
         print = false;
     end
