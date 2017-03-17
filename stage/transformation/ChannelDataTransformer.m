@@ -21,8 +21,8 @@ classdef ChannelDataTransformer
             LOG = Log.getLogger();
             LOG.infoStart(class(obj), 'run');
             
-            minValues = zeros(length(obj.allChannelNames));
-            maxValues = zeros(length(obj.allChannelNames));
+            minValues = zeros(1, length(obj.allChannelNames));
+            maxValues = zeros(1, length(obj.allChannelNames));
             
             if(isempty(datasets) || isempty(datasets{1}.data))
                 LOG.log(class(obj), 'datasets empty!');

@@ -85,7 +85,7 @@ classdef DataSetsPreprocessor < Stage
             
             % apply preprocessing function to selected channels
             if(isfield(obj.props, 'sensorChannelDataTransformer') && ~isempty(dataSets))
-                obj.props.sensorChannelDataTransformer.run(dataSets);
+                dataSets = obj.props.sensorChannelDataTransformer.run(dataSets);
             end
             
             LOG.infoEnd(class(obj), 'run');
