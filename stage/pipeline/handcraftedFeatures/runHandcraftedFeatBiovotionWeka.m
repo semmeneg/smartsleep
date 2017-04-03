@@ -1,78 +1,57 @@
-% This pipline parses Biovotion raw data and labeled events and merges
-% them. At the end a Weka classification is trained and verified.
+% Create handcrafted features by applying a set of aggregation functions to
+% the set of data for each event window and channel.
+% Apply Weka Random Forest classifer on merged data input.
+
 tic
 clear();
 
-subFolder = '2016-12-01_HandcraftedFeat_Biovotion_Weka';
+LOG = Log.getLogger();
 
-selectedRawDataChannels = { 'Value05','Value06','Value07','Value08','Value09','Value10','Value11' };
-samplingFrequency = 51; %has currently no influence for calculation of handcrafted features. 
+% Common properties
+sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_10-11_Patients\P*' ], [CONF.BASE_DATA_PATH '2016_12_Patients\P*'], [CONF.BASE_DATA_PATH '2017_01_Patients\P*' ]};
 
-mandatoryChannelsName = {};
+sourceDataFolders = getFolderList(sourceFolderPatterns);
+
+outputFolder = [CONF.BASE_OUTPUT_PATH '2017-04-03_HandcraftedFeatures_Biovotion_patients01-27\'];
+[s, mess, messid] = mkdir(outputFolder);
+
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
+dataSources = {'Biovotion'};
 
-aggregationFunctions = { @energyFeature, @meanFeature, @rootMeanSquareFeature, ...
-    @skewnessFeature, @stdFeature, @sumFeature, @vecNormFeature };
+SETUP_LOG = SetupLog([outputFolder 'setup.log']);
+SETUP_LOG.log(strjoin(dataSources, ' & '));
+SETUP_LOG.log('Pipeline: Rawdata > Handcrafted features > Weka(RandomForest,10foldCross)');
+SETUP_LOG.log(['Datafolders: ' join({sourceDataFolders.name}, ', ')]);
 
-allPatientsPath = [CONF.BASE_DATA_PATH 'October2November2016Patients\' ];
-% allPatientsPath = [CONF.BASE_DATA_PATH 'Temp\' ];
+% ---- Preprocess Biovotion --------
+dataAndLabelMerger
+builder = BiovotionPreprocessorBuilder(selectedClasses, sourceDataFolders, outputFolder, dataAndLabelMerger);
+builder.sensorChannelDataTransformer = [];
+builder.dataAndLabelMerger = DefaultAggregatedDataAndLabelMerger(builder.samplingFrequency, builder.mandatoryChannelsName, builder.selectedClasses, builder.assumedEventDuration);
 
-files = dir( [ allPatientsPath 'P*' ] );
-dirFlags = [ files.isdir ];
-allPatientFolders = files( dirFlags );
+SETUP_LOG.log(['Channels: ' builder.selectedRawDataChannels]);
+dataSets = builder.build().run();
 
-patientCount = length( allPatientFolders );
-
-allData = [];
-allLabels = [];
-allPatients = [];
-
-for i = 1 : patientCount
-    patienFolderName = allPatientFolders( i ).name;
-    
-    fprintf('Process patient: %s\n', patienFolderName);
-    
-    % 1. parse labeled events
-    labeledEventsFile = [allPatientsPath patienFolderName '\1_raw\*.txt' ];
-    sleepPhaseParser = SleepPhaseEventParser(labeledEventsFile);
-    labeledEvents = sleepPhaseParser.run();
-    
-    % 2. parse raw data
-    csvFile = [allPatientsPath patienFolderName '\1_raw\Biovotion\*.txt' ];
-    rawDataReader = BiovotionCsvReader(csvFile, selectedRawDataChannels, 11);
-    rawData = rawDataReader.run();
-    if(isempty(rawData))
-        disp('No data found for person.');
-        continue;
-    end
-    rawData.channelNames = selectedRawDataChannels;
-    
-    %3 merge label and events
-    merger = DefaultAggregatedDataAndLabelMerger(samplingFrequency, labeledEvents, rawData, mandatoryChannelsName, selectedClasses, aggregationFunctions);
-    [ data, time, labels, channelNames ] = merger.run();
-    
-    %4 combine features and labels of all patients
-    allData = [allData ; data];
-    allLabels = [allLabels ; labels];
-    
+% merge datasets
+data = [];
+labels = [];
+for dataSet = dataSets
+    data = [data ; dataSet{end}.data];
+    labels = [labels ; dataSet{end}.labels];
 end
 
-allData(isnan(allData)) = 0;
+dataSource = strjoin(dataSources, '_');
 
-%5 write ARFF file
-combinedPatientsPath = [allPatientsPath 'all\' ]
-[s, mess, messid] = mkdir([ combinedPatientsPath CONF.PREPROCESSED_DATA_SUBFOLDER '\' subFolder]);
-arffFileName = [ combinedPatientsPath CONF.PREPROCESSED_DATA_SUBFOLDER '\'  subFolder '\raw_features__Biovotion.arff'];
-writer = WekaArffFileWriter(allData, allLabels, selectedClasses, arffFileName);
+% write ARFF files
+arffFileName = [ outputFolder 'dbn_created_features__' dataSource '.arff'];
+writer = WekaArffFileWriter(data, labels, selectedClasses, arffFileName);
 writer.run();
 
-%6 run Weka classifier
-resultFolderPath = [ combinedPatientsPath CONF.WEKA_DATA_SUBFOLDER '\'  subFolder];
-trainedModelFileName = 'weka_out__Biovotion.model';
-textResultFileName = 'weka_out_confusion_matrix__Biovotion.txt';
+% run Weka classifier
+trainedModelFileName = ['weka_out__' dataSource '.model'];
+textResultFileName = ['weka_out_confusion_matrix__' dataSource '.txt'];
 csvResultFileName = 'cm.csv';
-classifier = WekaClassifier(arffFileName, [], resultFolderPath, trainedModelFileName, textResultFileName, csvResultFileName, 'test pipeline');
+classifier = WekaClassifier(arffFileName, [], outputFolder, trainedModelFileName, textResultFileName, csvResultFileName, dataSource);
 classifier.run();
 
 toc
-

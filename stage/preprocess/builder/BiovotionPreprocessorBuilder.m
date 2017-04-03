@@ -4,6 +4,7 @@
 classdef BiovotionPreprocessorBuilder
     
     properties(Access=public)
+        % Value05 = "dark", Value06="green", Value07="red", Value08="IR", Value09-11 = position
         selectedRawDataChannels = { 'Value06','Value07','Value08','Value09','Value10','Value11' };
         mandatoryChannelsName = {};
         samplingFrequency = 51.2; % Biovotion frequency: ~51.2 Hz
@@ -13,6 +14,8 @@ classdef BiovotionPreprocessorBuilder
         dataPreprocessingFunction = @(values, minValue, maxValue)normalizeToRangeWithMinMax(values,-5,5, minValue, maxValue);
         channelsToApplyNormalizationFunction = {};
         print = false;
+        dataAndLabelMerger = [];
+        sensorChannelDataTransformer = [];
     end
     
     properties(Access=private)
@@ -29,6 +32,11 @@ classdef BiovotionPreprocessorBuilder
             
             obj.mandatoryChannelsName = obj.selectedRawDataChannels;
             obj.channelsToApplyNormalizationFunction = obj.selectedRawDataChannels;
+
+            %default
+            obj.dataAndLabelMerger = BiovotionRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration);
+            %default
+            obj.sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
         end
     end    
     
@@ -43,8 +51,8 @@ classdef BiovotionPreprocessorBuilder
             props.outputFolder = obj.outputFolder;
             props.sensorsRawDataFilePatterns = obj.sensorsRawDataFilePatterns;
             props.sensorDataReader = BiovotionCsvReader(obj.selectedRawDataChannels, 11);
-            props.sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
-            props.dataAndLabelMerger = BiovotionRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration);
+            props.dataAndLabelMerger = obj.dataAndLabelMerger;
+            props.sensorChannelDataTransformer = obj.sensorChannelDataTransformer;
             props.print = obj.print;
             preprocessor = DataSetsPreprocessor(props);
         end

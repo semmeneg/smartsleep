@@ -7,21 +7,21 @@ clear();
 LOG = Log.getLogger();
 
 % Common properties
+sourceFolderPatterns = {[CONF.BASE_DATA_PATH 'Test\2016_10-11_Patients\P2*']};
 %sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_10-11_Patients\P*' ], [CONF.BASE_DATA_PATH '2016_12_Patients\P*'], [CONF.BASE_DATA_PATH '2017_01_Patients\P*' ]};
-sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_12_Patients\P12*'], ...
-[CONF.BASE_DATA_PATH '2016_12_Patients\P13*'], ...
-[CONF.BASE_DATA_PATH '2016_12_Patients\P16*'], ...
-[CONF.BASE_DATA_PATH '2016_12_Patients\P17*'], ...
-[CONF.BASE_DATA_PATH '2017_01_Patients\P18*'], ...
-[CONF.BASE_DATA_PATH '2017_01_Patients\P19*'], ...
-[CONF.BASE_DATA_PATH '2017_01_Patients\P20*'], ...
-[CONF.BASE_DATA_PATH '2017_01_Patients\P21*'], ...
-[CONF.BASE_DATA_PATH '2017_01_Patients\P25*']};
+% sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_12_Patients\P12*'], ...
+% [CONF.BASE_DATA_PATH '2016_12_Patients\P13*'], ...
+% [CONF.BASE_DATA_PATH '2016_12_Patients\P16*'], ...
+% [CONF.BASE_DATA_PATH '2016_12_Patients\P17*'], ...
+% [CONF.BASE_DATA_PATH '2017_01_Patients\P18*'], ...
+% [CONF.BASE_DATA_PATH '2017_01_Patients\P19*'], ...
+% [CONF.BASE_DATA_PATH '2017_01_Patients\P20*'], ...
+% [CONF.BASE_DATA_PATH '2017_01_Patients\P21*'], ...
+% [CONF.BASE_DATA_PATH '2017_01_Patients\P25*']};
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
-outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-27_Raw_DBN_Weka_with_Biovotion_value6-11\'];
-% outputFolder = [CONF.BASE_OUTPUT_PATH '2017-02-15_Test\'];
+outputFolder = [CONF.BASE_OUTPUT_PATH '2017-03-21_Raw_DBN_Weka_Biovotion__Code_Analyse\'];
 [s, mess, messid] = mkdir(outputFolder);
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
@@ -33,7 +33,8 @@ SETUP_LOG.log('Pipeline: Rawdata > DBN > Weka(RandomForest,10foldCross)');
 SETUP_LOG.log(['Datafolders: ' join({sourceDataFolders.name}, ', ')]);
 
 % ---- Preprocess Biovotion --------
-preprocessor = BiovotionPreprocessorBuilder(selectedClasses, sourceDataFolders, outputFolder).build();
+preprocessor = BiovotionPreprocessorBuilder(selectedClasses, sourceDataFolders, outputFolder, ).build();
+SETUP_LOG.log(['Channels: ' preprocessor.selectedRawDataChannels]);
 dataSets = preprocessor.run();
 
 sensors = [];
@@ -43,8 +44,12 @@ sensorDataMerger = NamedDataSetsIntersection();
 [ mergedDataSets ] = sensorDataMerger.run(sensors);
 
 %Split data(sets) in trainings and validation data
-dataSplit = [0.7, 0.3, 0.0];
+%dataSplit = [0.7, 0.3, 0.0];
+dataSplit = [1.0, 0.0, 0.0];
 splittedData = DataGroupsStratificator(mergedDataSets, dataSplit);
+
+SETUP_LOG.log(sprintf('Trainings data lowest value: %d',  min(min(splittedData.trainData))));
+SETUP_LOG.log(sprintf('Trainings data highest value: %d',  max(max(splittedData.trainData))));
 
 % Run DBN (RBM)
 dbnInputData.data = splittedData.trainData;
@@ -58,7 +63,8 @@ SETUP_LOG.log(sprintf('%s %d', 'Rawdata components:', inputComponents));
 layersConfig =[struct('hiddenUnitsCount', floor(inputComponents /2), 'maxEpochs', 150); ...
                struct('hiddenUnitsCount', floor(inputComponents /3), 'maxEpochs', 150)];
 
-rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData, true);
+backpropagation = false;           
+rbmTrainer = RBMFeaturesTrainer(layersConfig, dbnInputData, backpropagation);
 SETUP_LOG.logDBN(rbmTrainer.getDBN());
 higherOrderFeaturesDBN = rbmTrainer.run();
 

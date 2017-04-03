@@ -10,7 +10,7 @@ sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_01-05_Persons\Patient*']};
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
-outputFolder = [CONF.BASE_OUTPUT_PATH '2017-03-01_Raw_DBN_Weka_with_MSR_input_normalized\'];
+outputFolder = [CONF.BASE_OUTPUT_PATH '2017-03-17_Raw_DBN__MSR__normalized_overall_persons_1-27\'];
 [s, mess, messid] = mkdir(outputFolder);
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
@@ -35,6 +35,9 @@ sensorDataMerger = NamedDataSetsIntersection();
 %Split data(sets) in trainings and validation data
 dataSplit = [0.7, 0.3, 0.0];
 splittedData = DataGroupsStratificator(mergedDataSets, dataSplit);
+
+SETUP_LOG.log(sprintf('Trainings data lowest value: %d',  min(min(splittedData.trainData))));
+SETUP_LOG.log(sprintf('Trainings data highest value: %d',  max(max(splittedData.trainData))));
 
 % Run DBN (RBM)
 dbnInputData.data = splittedData.trainData;
