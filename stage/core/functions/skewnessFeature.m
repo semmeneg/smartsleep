@@ -7,7 +7,7 @@ function [ scalar ] = skewnessFeature( data, featureInfo )
     
     
     % try to go with this. To be verified !!!
-    x = data{ 1 };
+    x = data;
     scalar =  (sum((x-mean(x)).^3)./length(x)) ./ (var(x,1).^1.5);
 end
 

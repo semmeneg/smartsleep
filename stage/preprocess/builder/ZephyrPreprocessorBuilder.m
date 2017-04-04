@@ -13,12 +13,14 @@ classdef ZephyrPreprocessorBuilder
         assumedEventDuration = 30; % seconds
         dataSource = 'Zephyr';
         sensorsRawDataFilePatterns = {'*_Summary.csv'};
+        print = false;
+        dataAndLabelMerger = [];
+        
         dataPreprocessingFunction = @(values, minValue, maxValue)normalizeToRangeWithMinMax(values,-5,5, minValue, maxValue);
         channelsToApplyNormalizationFunction = {};
-        print = false;
-    end
-    
-    properties(Access=private)
+        
+        sensorChannelDataTransformers = {};
+        
         selectedClasses = {};
         sourceDataFolders = {};
         outputFolder = [];
@@ -32,6 +34,11 @@ classdef ZephyrPreprocessorBuilder
             
             obj.mandatoryChannelsName = obj.selectedRawDataChannels;
             obj.channelsToApplyNormalizationFunction = obj.selectedRawDataChannels;
+            
+            %default
+            obj.dataAndLabelMerger = DefaultRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration);
+            %default
+            obj.sensorChannelDataTransformers{1} = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
         end
     end    
     
@@ -46,8 +53,8 @@ classdef ZephyrPreprocessorBuilder
             props.outputFolder = obj.outputFolder;
             props.sensorsRawDataFilePatterns = obj.sensorsRawDataFilePatterns;
             props.sensorDataReader = ZephyrCsvReader(obj.selectedRawDataChannels);
-            props.sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
-            props.dataAndLabelMerger = DefaultRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration);
+            props.dataAndLabelMerger = obj.dataAndLabelMerger;
+            props.sensorChannelDataTransformers = obj.sensorChannelDataTransformers;
             props.print = obj.print;
             preprocessor = DataSetsPreprocessor(props);
         end

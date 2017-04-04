@@ -32,11 +32,7 @@ classdef BiovotionRawDataAndLabelMerger < DefaultRawDataAndLabelMerger
                     filterdData = [];
                 end
         end
-        
-        %% Just create a feature vector of all data
-        function featureVector = createFeatureVector(obj, eventWindowData)
-            featureVector = eventWindowData(:).';
-        end
+
     end
     
 end

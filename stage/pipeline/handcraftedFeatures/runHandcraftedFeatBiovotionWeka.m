@@ -9,10 +9,13 @@ LOG = Log.getLogger();
 
 % Common properties
 sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_10-11_Patients\P*' ], [CONF.BASE_DATA_PATH '2016_12_Patients\P*'], [CONF.BASE_DATA_PATH '2017_01_Patients\P*' ]};
+%sourceFolderPatterns = {[CONF.BASE_DATA_PATH '2016_10-11_Patients\PatientB01*' ]};
 
 sourceDataFolders = getFolderList(sourceFolderPatterns);
 
-outputFolder = [CONF.BASE_OUTPUT_PATH '2017-04-03_HandcraftedFeatures_Biovotion_patients01-27\'];
+outputFolder = [CONF.BASE_OUTPUT_PATH '2017-04-04_HandcraftedFeatures_Biovotion_patients01-27_with_normalization\'];
+%outputFolder = [CONF.BASE_OUTPUT_PATH 'test\'];
+
 [s, mess, messid] = mkdir(outputFolder);
 
 selectedClasses = {'R', 'W', 'N1', 'N2', 'N3'};
@@ -24,10 +27,11 @@ SETUP_LOG.log('Pipeline: Rawdata > Handcrafted features > Weka(RandomForest,10fo
 SETUP_LOG.log(['Datafolders: ' join({sourceDataFolders.name}, ', ')]);
 
 % ---- Preprocess Biovotion --------
-dataAndLabelMerger
-builder = BiovotionPreprocessorBuilder(selectedClasses, sourceDataFolders, outputFolder, dataAndLabelMerger);
-builder.sensorChannelDataTransformer = [];
-builder.dataAndLabelMerger = DefaultAggregatedDataAndLabelMerger(builder.samplingFrequency, builder.mandatoryChannelsName, builder.selectedClasses, builder.assumedEventDuration);
+builder = BiovotionPreprocessorBuilder(selectedClasses, sourceDataFolders, outputFolder);
+aggregationFunctions = { @energyFeature, @meanFeature, @rootMeanSquareFeature, ...
+    @skewnessFeature, @stdFeature, @sumFeature, @vecNormFeature };
+%builder.sensorChannelDataTransformers = {};
+builder.sensorChannelDataTransformers{end} = ChannelDataAggregationFunctionTransformer(builder.selectedRawDataChannels, builder.selectedRawDataChannels, aggregationFunctions);
 
 SETUP_LOG.log(['Channels: ' builder.selectedRawDataChannels]);
 dataSets = builder.build().run();

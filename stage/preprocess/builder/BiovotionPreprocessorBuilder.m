@@ -11,14 +11,14 @@ classdef BiovotionPreprocessorBuilder
         assumedEventDuration = 30; % seconds
         dataSource = 'Biovotion';
         sensorsRawDataFilePatterns = {'*.txt'};
-        dataPreprocessingFunction = @(values, minValue, maxValue)normalizeToRangeWithMinMax(values,-5,5, minValue, maxValue);
-        channelsToApplyNormalizationFunction = {};
         print = false;
         dataAndLabelMerger = [];
-        sensorChannelDataTransformer = [];
-    end
-    
-    properties(Access=private)
+        
+        dataPreprocessingFunction = @(values, minValue, maxValue)normalizeToRangeWithMinMax(values,-5,5, minValue, maxValue);
+        channelsToApplyNormalizationFunction = {};
+        
+        sensorChannelDataTransformers = {};
+        
         selectedClasses = {};
         sourceDataFolders = {};
         outputFolder = [];
@@ -36,7 +36,7 @@ classdef BiovotionPreprocessorBuilder
             %default
             obj.dataAndLabelMerger = BiovotionRawDataAndLabelMerger(obj.samplingFrequency, obj.mandatoryChannelsName, obj.selectedClasses, obj.assumedEventDuration);
             %default
-            obj.sensorChannelDataTransformer = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
+            obj.sensorChannelDataTransformers{1} = ChannelDataTransformer(obj.channelsToApplyNormalizationFunction, obj.selectedRawDataChannels, obj.dataPreprocessingFunction);
         end
     end    
     
@@ -52,7 +52,7 @@ classdef BiovotionPreprocessorBuilder
             props.sensorsRawDataFilePatterns = obj.sensorsRawDataFilePatterns;
             props.sensorDataReader = BiovotionCsvReader(obj.selectedRawDataChannels, 11);
             props.dataAndLabelMerger = obj.dataAndLabelMerger;
-            props.sensorChannelDataTransformer = obj.sensorChannelDataTransformer;
+            props.sensorChannelDataTransformers = obj.sensorChannelDataTransformers;
             props.print = obj.print;
             preprocessor = DataSetsPreprocessor(props);
         end

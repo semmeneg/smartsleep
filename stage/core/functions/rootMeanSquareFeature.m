@@ -6,6 +6,6 @@ function [ scalar ] = rootMeanSquareFeature( data, featureInfo )
 %     scalar = rms( str2double(data{ 1 }) );
     
     % Try to use this function
-    scalar = sqrt(mean(data{ 1 }.^2)) ;
+    scalar = sqrt(mean(data.^2)) ;
 end
 

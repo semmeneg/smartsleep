@@ -2,8 +2,8 @@ function [ scalar ] = maxFreqFeature( data, featureInfo )
 %ENERGYFEATURE Summary of this function goes here
 %   Detailed explanation goes here
 
-    n = length( data{ 1 } );
-    y = fft( data{ 1 } );
+    n = length( data );
+    y = fft( data );
     nHalf = floor( n/2 );
     
     Fs = ( 1000 * n ) / featureInfo.windowTime;

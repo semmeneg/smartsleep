@@ -8,6 +8,7 @@ classdef (Abstract) AbstractDataAndLabelMerger
         selectedClasses = [];
         assumedEventDuration = [];
         samplesPerEvent = [];
+        interpolate = true;
     end
     
     methods
@@ -18,12 +19,16 @@ classdef (Abstract) AbstractDataAndLabelMerger
         % param mandatoryChannelsName array of channels not expected to be empty (0). Skips whole data vector if one of this channels is null.
         % param selectedClasses lists the considered event classes(labels). The others shall be skipped.
         % param assumedEventDuration defines the time window resp. durations of labeled events which shall be considered
-        function obj = AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration)
+        function obj = AbstractDataAndLabelMerger(samplingFrequency, mandatoryChannelsName, selectedClasses, assumedEventDuration, interpolate)
             obj.samplingFrequency = samplingFrequency;
             obj.mandatoryChannelsName = mandatoryChannelsName;
             obj.selectedClasses = selectedClasses;
             obj.assumedEventDuration = assumedEventDuration;
             obj.samplesPerEvent = ceil(obj.samplingFrequency * obj.assumedEventDuration); %rounded up
+            
+            if(nargin > 4)
+                obj.interpolate = interpolate;
+            end
             
             obj.validateInput();
         end
@@ -88,16 +93,18 @@ classdef (Abstract) AbstractDataAndLabelMerger
                     continue;
                 end
                 
-                % interpolate (add/remove samples in window to match target
-                % samples per window given by samples frequency x windowTime
-                nextWindowsFirstSample = [];
-                if (size(rawData.data,1)> dataIdx(end))
-                    nextWindowsFirstSample = rawData.data(dataIdx(end)+1, :);
-                end
-                
-                eventWindowData = obj.interpolateSamples(eventWindowData, nextWindowsFirstSample);                
-                if(isempty(eventWindowData))
-                    continue;
+                if(obj.interpolate)
+                    % interpolate (add/remove samples in window to match target
+                    % samples per window given by samples frequency x windowTime
+                    nextWindowsFirstSample = [];
+                    if (size(rawData.data,1)> dataIdx(end))
+                        nextWindowsFirstSample = rawData.data(dataIdx(end)+1, :);
+                    end
+
+                    eventWindowData = obj.interpolateSamples(eventWindowData, nextWindowsFirstSample);                
+                    if(isempty(eventWindowData))
+                        continue;
+                    end
                 end
                 
                 % add data, time and labels

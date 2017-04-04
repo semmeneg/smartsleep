@@ -23,31 +23,38 @@ classdef DefaultAggregatedDataAndLabelMerger < AbstractDataAndLabelMerger
             obj.aggregationFunctions = aggregationFunctions;
         end
         
+        % interpolation not required for aggregation function (handcrafted
+        % features)
+        function interpolatedData = interpolateSamples(~, eventWindowData, ~)
+            interpolatedData = eventWindowData;
+        end
+        
         %% The feature vector count resp. the amount of the components is
         % calculated based on the amount of channels and the aggregation functions (feature functions).
         function featureVectorCount = getFeatureVectorCount(obj)
             featureVectorCount = length( obj.rawData.channelNames ) * length(obj.aggregationFunctions);
         end
         
-        %% Remove data samples where at least one of the non zero channels is "0".
-        % Skip whole window data set if less than 50% of the event window
-        % data is left after filtering
-        function filterdData = filterData(obj, eventWindowData, ~)
+        %% Skip the labeled event window if the expected set of
+        % matching raw data is not fully available (ex. at the beginning or if mandatory channels are "0").
+        function filterdData = filterData(obj, eventWindowData, mandatoryColumnsIds)
             
-            filterdData = eventWindowData;
-            samplesPerWindow = size(eventWindowData,1);
-            
-            % remove events where at least one of the not zero channels has a 0 value
-            for channel = obj.mandatoryChannelsName
-                channelId = strmatch(channel, obj.rawData.channelNames, 'exact');
-                filterdData(~any(filterdData(:,channelId),2),:) = [];
-            end
-            
-            % skip if less than 50% of the event window data is left
-            if ( length(filterdData) < samplesPerWindow/2 )
-                filterdData = [];
-            end
-        end
+                filterdData = eventWindowData;
+                            
+                % skip event if one value of required channels value is 0
+                for channelId = mandatoryColumnsIds
+                    if( sum(~any(eventWindowData(:,channelId),2)) > 0)
+                        filterdData = [];
+                        return;
+                    end
+                end
+                
+                %skip event if less than half of the expected samples per
+                %window are available.
+                if(size(eventWindowData,1) < (obj.samplingFrequency * obj.assumedEventDuration)/2)
+                    filterdData = [];
+                end
+        end        
         
         %% Just create a feature vector of all data
         function featureVector = createFeatureVector(obj, eventWindowData)
@@ -66,11 +73,6 @@ classdef DefaultAggregatedDataAndLabelMerger < AbstractDataAndLabelMerger
                 featureVector(1, ( ( functionIdx - 1 ) * channelsCount ) + 1 : ( functionIdx * channelsCount ) ) = scalars;
             end
             
-        end
-        
-        function interpolatedData = interpolateSamples(~, eventWindowData, ~)
-            % nothing to interpolate, apply aggregation function to available values.
-            interpolatedData = eventWindowData;
         end
     end
     

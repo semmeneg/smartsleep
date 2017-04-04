@@ -83,9 +83,11 @@ classdef DataSetsPreprocessor < Stage
                 end
             end
             
-            % apply preprocessing function to selected channels
+            % apply data transformes (ex. normalization functions, aggregations functions for handcrafted features, etc.)
             if(isfield(obj.props, 'sensorChannelDataTransformer') && ~isempty(dataSets))
-                dataSets = obj.props.sensorChannelDataTransformer.run(dataSets);
+                for transformer = obj.props.sensorChannelDataTransformers
+                    dataSets = transformer.run(dataSets);
+                end
             end
             
             LOG.infoEnd(class(obj), 'run');

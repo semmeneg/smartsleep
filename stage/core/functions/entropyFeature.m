@@ -3,7 +3,7 @@ function [ scalar ] = entropyFeature( data, featureInfo )
 %   Detailed explanation goes here
 
        % !!!!!! Requires Matlab Image Processing Toolkit. 
-        scalar = entropy( data{ 1 } );
+        scalar = entropy( data );
         
         % Alternative function ???
 %         scalar =  -sum(data{ 1 }.*log2(data{ 1 }));
